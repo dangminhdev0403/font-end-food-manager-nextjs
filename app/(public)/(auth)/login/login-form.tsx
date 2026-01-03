@@ -22,7 +22,9 @@ export default function LoginForm() {
       password: "",
     },
   });
-
+  const onSubmit = (data: LoginBodyType) => {
+    console.log(data);
+  };
   return (
     <Card className="mx-auto w-full max-w-md">
       <CardHeader>
@@ -79,7 +81,7 @@ export default function LoginForm() {
                 type="submit"
                 size="lg"
                 className="w-full"
-                variant="primary"
+                variant="default"
               >
                 Đăng nhập
               </Button>

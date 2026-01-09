@@ -32,6 +32,7 @@ const buttonVariants = cva(
         shimmer:
           "bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 text-slate-900 dark:from-slate-700 dark:via-slate-800 dark:to-slate-700 dark:text-white animate-shimmer shadow-sm hover:shadow-md active:scale-95",
         neon: "bg-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 border-2 border-cyan-400 hover:border-blue-500 dark:bg-white dark:text-transparent active:scale-95 hover:shadow-lg hover:shadow-cyan-500/50",
+        food: "bg-amber-700/20 border border-amber-600/40 text-amber-100 hover:bg-amber-600 hover:text-black hover:border-amber-500",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

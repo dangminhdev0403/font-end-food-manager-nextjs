@@ -95,7 +95,7 @@ export default function LoginForm() {
                   </span>
                 </div>
               </div>
-              <Button type="button" variant="secondary" className="w-full">
+              <Button type="button" variant="secondary" className="w-full ">
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden>
                   <path
                     d="M21.805 10.023h-9.82v3.955h5.627c-.246 1.318-1.478 3.865-5.627 3.865-3.381 0-6.14-2.8-6.14-6.244s2.759-6.244 6.14-6.244c1.928 0 3.223.83 3.96 1.547l2.7-2.626C16.928 2.703 14.71 1.7 11.985 1.7 6.932 1.7 2.83 5.88 2.83 11.6c0 5.72 4.102 9.9 9.155 9.9 5.288 0 8.786-3.728 8.786-8.98 0-.604-.066-1.062-.151-1.497z"
@@ -104,6 +104,17 @@ export default function LoginForm() {
                 </svg>
                 Đăng nhập bằng Google
               </Button>
+              <div className="pt-4 text-center">
+                <p className="text-xs text-white/50">
+                  Không có tài khoản?{" "}
+                  <a
+                    href="#"
+                    className="text-white hover:text-white/80 transition-colors duration-300 font-semibold"
+                  >
+                    Đăng ký ngay
+                  </a>
+                </p>
+              </div>
             </div>
           </form>
         </Form>

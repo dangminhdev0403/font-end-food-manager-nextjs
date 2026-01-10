@@ -2,11 +2,11 @@ import { z } from "zod";
 
 const configSchema = z.object({
   NEXT_PUBLIC_ENVIRONMENT: z.string(),
-  API_SERVER_URL: z.string(),
+  NEXT_PUBLIC_API_ENDPOINT: z.string(),
 });
 
 const configProject = configSchema.safeParse({
-  API_SERVER_URL: process.env.API_SERVER_URL,
+  NEXT_PUBLIC_API_ENDPOINT: process.env.NEXT_PUBLIC_API_ENDPOINT,
   NEXT_PUBLIC_ENVIRONMENT: process.env.NEXT_PUBLIC_ENVIRONMENT,
 });
 if (!configProject.success) {

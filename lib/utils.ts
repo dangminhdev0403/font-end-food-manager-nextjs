@@ -7,18 +7,37 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+export function responseSuccess<T>(res: AxiosResponse<T>) {
+  // Chỉ trả data, không trả nguyên AxiosResponse
+  return NextResponse.json(res.data, { status: res.status });
+}
 
-export function responseError(error: ApiError) {
+export function responseError(error: unknown) {
+  const isApi =
+    (error as ApiError)?.name === "ApiError" && "status" in (error as any);
+
+  if (isApi) {
+    const apiError = error as ApiError;
+    return NextResponse.json(
+      {
+        status: apiError.status,
+        error: apiError.error,
+        message: apiError.message,
+        data: apiError.data ?? null,
+      },
+      { status: apiError.status }
+    );
+  }
+
+  console.error(error);
+
   return NextResponse.json(
     {
-      status: error.status,
-      error: error.error,
-      message: error.message,
+      status: 500,
+      error: "Internal Server Error",
+      message: "Lỗi linh tinh nào đó chưa xử lí",
       data: null,
     },
-    { status: error.status }
+    { status: 500 }
   );
-}
-export function responseSuccess(res: AxiosResponse) {
-  return NextResponse.json(res, { status: res.status });
 }

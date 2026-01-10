@@ -16,7 +16,7 @@ interface LoginRes {
 }
 const authRequest = {
   serverLogin: (body: LoginBodyType) => http.post<LoginRes>("auth/login", body),
-  clientLogin: (body: LoginBodyType) => http.post<LoginRes>("auth/login", body),
+  clientLogin: (body: LoginBodyType) => http.post<LoginRes>("api/auth/login", body),
 };
 
 export default authRequest;

@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     },
     rules: {
       ...pluginQuery.configs.recommended.rules,
+      "no-explicit-any": "warn",
     },
   },
   // Override default ignores of eslint-config-next.

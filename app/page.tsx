@@ -470,7 +470,7 @@ export default function Home() {
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.6 }}
         id="contact"
-        className="py-32 px-6 bg-gradient-to-br from-amber-900 via-orange-900 to-amber-950 text-white "
+        className="py-32 px-6 bg-linear-to-br from-amber-900 via-orange-900 to-amber-950 text-white "
       >
         <div className="container mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -562,7 +562,7 @@ export default function Home() {
       </motion.section>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-b from-background to-amber-950/20 border-t border-amber-900/20 py-16 px-6">
+      <footer className="bg-linear-to-b from-background to-amber-950/20 border-t border-amber-900/20 py-16 px-6">
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <AnimatedSection animation="fade-in-left">

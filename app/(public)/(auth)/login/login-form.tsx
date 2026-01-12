@@ -11,6 +11,8 @@ import {
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "@/components/ui/use-toast";
+import { useLoginMutation } from "@/queries/useAuth";
 import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -18,6 +20,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function LoginForm() {
+  const loginMutation = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -30,11 +33,21 @@ export default function LoginForm() {
   });
 
   const onSubmit = async (data: LoginBodyType) => {
+    if (loginMutation.isPending) return;
     try {
       setLoading(true);
-      console.log(data);
-      // call api here
+      await loginMutation.mutateAsync(data);
+      toast({
+        description: "Đăng nhập thành công",
+        variant: "success",
+      });
+    } catch (error: any) {
+      toast({
+        description: error.message as string,
+        variant: "error",
+      });
     } finally {
+  
       setLoading(false);
     }
   };
@@ -79,6 +92,8 @@ export default function LoginForm() {
                       {...field}
                       type={showPassword ? "text" : "password"}
                       className="h-11 pr-10"
+                      aria-autocomplete="inline"
+                      autoComplete="off"
                     />
                     <button
                       type="button"

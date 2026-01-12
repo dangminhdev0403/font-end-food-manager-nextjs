@@ -1,4 +1,5 @@
 import envConfig from "@/config";
+import { LoginRes } from "@/services/internal/auth";
 import axios, {
   AxiosError,
   AxiosInstance,
@@ -7,6 +8,9 @@ import axios, {
 } from "axios";
 
 // --- ApiError class ---
+export interface ApiResponse<T> {
+  data: T;
+}
 export class ApiError<T = any> extends Error {
   status: number;
   error: string | null;
@@ -33,6 +37,8 @@ export class ApiError<T = any> extends Error {
   }
 }
 
+const isClient = globalThis.window !== undefined;
+
 // --- Create Axios instance ---
 export const http: AxiosInstance = axios.create({
   baseURL: envConfig.NEXT_PUBLIC_API_ENDPOINT,
@@ -43,12 +49,10 @@ export const http: AxiosInstance = axios.create({
 //@ts-ignore
 http.interceptors.request.use((config: AxiosRequestConfig) => {
   // Nếu headers chưa có, tạo object
-  if (!config.headers) {
-    config.headers = {};
-  }
+  config.headers ??= {};
 
   // Add Authorization nếu client
-  if (typeof window !== "undefined") {
+  if (isClient) {
     const token = localStorage.getItem("accessToken");
     if (token) {
       (
@@ -67,7 +71,26 @@ http.interceptors.request.use((config: AxiosRequestConfig) => {
 
 // --- Response Interceptor ---
 http.interceptors.response.use(
-  <T>(res: AxiosResponse<T>) => res, // trả nguyên response
+  //@ts-ignore
+  <T>(res: AxiosResponse<ApiResponse<T>>) => {
+    const url = res.config.url ?? "";
+
+    if (isClient) {
+      if (url.includes("/login")) {
+        const { accessToken, refreshToken } = res.data.data as LoginRes;
+
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
+      }
+      if (url.includes("/logout")) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+      }
+    }
+
+    return res.data; // trả data cho caller
+  },
+
   (error: AxiosError) => {
     const payload = error.response?.data as any;
 
@@ -86,39 +109,34 @@ http.interceptors.response.use(
 export async function request<T>(
   method: "GET" | "POST" | "PUT" | "DELETE",
   url: string,
+  data?: any,
   options?: AxiosRequestConfig & { baseUrl?: string }
-): Promise<AxiosResponse<T>> {
-  const baseURL =
-    options?.baseUrl === undefined
-      ? envConfig.NEXT_PUBLIC_API_ENDPOINT // backend mặc định
-      : options.baseUrl === "" // gọi client
-      ? undefined
-      : options.baseUrl;
+): Promise<T> {
+  let baseURL: string | undefined;
 
-  return http.request<T>({
-    ...options,
+  if (options?.baseUrl === undefined) {
+    baseURL = envConfig.NEXT_PUBLIC_API_ENDPOINT;
+  } else {
+    baseURL = options.baseUrl || undefined;
+  }
+
+  const res = await http.request<ApiResponse<T>>({
     url,
     method,
+    data,
+    ...options,
     baseURL,
   });
-}
 
-// --- Shortcut helpers ---
+  return res.data.data;
+}
 export const httpClient = {
-  get: <T>(url: string, options?: AxiosRequestConfig & { baseUrl?: string }) =>
-    request<T>("GET", url, options),
   post: <T>(
     url: string,
     data?: any,
     options?: AxiosRequestConfig & { baseUrl?: string }
-  ) => request<T>("POST", url, { ...options, data }),
-  put: <T>(
-    url: string,
-    data?: any,
-    options?: AxiosRequestConfig & { baseUrl?: string }
-  ) => request<T>("PUT", url, { ...options, data }),
-  delete: <T>(
-    url: string,
-    options?: AxiosRequestConfig & { baseUrl?: string }
-  ) => request<T>("DELETE", url, options),
+  ) => request<T>("POST", url, data, options),
+
+  get: <T>(url: string, options?: AxiosRequestConfig & { baseUrl?: string }) =>
+    request<T>("GET", url, undefined, options),
 };

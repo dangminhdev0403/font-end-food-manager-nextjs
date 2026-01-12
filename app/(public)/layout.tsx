@@ -24,6 +24,8 @@ export default function Layout({
           <NavItems className="text-muted-foreground transition-colors hover:text-foreground flex-shrink-0" />
         </nav>
         <Sheet>
+          {/* <SheetTitle>Menu</SheetTitle> */}
+
           <SheetTrigger asChild>
             <Button
               variant="outline"

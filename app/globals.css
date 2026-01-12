@@ -220,6 +220,16 @@ html {
   background: #555;
 }
 
+/* Chrome, Edge, Brave */
+input[type="password"]::-webkit-textfield-decoration-container {
+  display: none !important;
+}
+
+/* Edge (cũ), IE */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

@@ -1,10 +1,12 @@
 // app/api/auth/login/route.ts
+import envConfig from "@/config";
 import { responseError, responseSuccess } from "@/lib/utils";
 import authRequest from "@/services/internal/auth";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 
+const isProduction = envConfig.NEXT_PUBLIC_ENVIRONMENT === "production";
 export async function POST(req: NextRequest) {
   try {
     // Lấy payload từ client
@@ -21,14 +23,14 @@ export async function POST(req: NextRequest) {
       path: "/",
       httpOnly: true,
       sameSite: "lax",
-      secure: true,
+      secure: isProduction,
       expires: decodedAccessToken.exp * 1000,
     });
     (await cookieStore).set("refreshToken", refreshToken, {
       path: "/",
       httpOnly: true,
       sameSite: "lax",
-      secure: true,
+      secure: isProduction,
       expires: decodedRefreshToken.exp * 1000,
     });
 

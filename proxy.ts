@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const privatePaths = ["/dashboard", "/profile", "/admin"];
+const privatePaths = ["/manage", "/profile", "/admin"];
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;

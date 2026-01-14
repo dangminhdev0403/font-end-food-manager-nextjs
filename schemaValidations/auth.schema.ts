@@ -1,14 +1,18 @@
-import { Role } from '@/constants/type'
-import z from 'zod'
+import { Role } from "@/constants/type";
+import z from "zod";
 
 export const LoginBody = z
   .object({
-    email: z.email(),
-    password: z.string().min(6).max(100)
-  })
-  .strict()
+    email: z.email({ message: "Email không đúng định dạng" }),
 
-export type LoginBodyType = z.TypeOf<typeof LoginBody>
+    password: z
+      .string()
+      .min(6, { message: "Mật khẩu phải có ít nhất 6 ký tự" })
+      .max(100, { message: "Mật khẩu không được vượt quá 100 ký tự" }),
+  })
+  .strict();
+
+export type LoginBodyType = z.TypeOf<typeof LoginBody>;
 
 export const LoginRes = z.object({
   data: z.object({
@@ -18,36 +22,36 @@ export const LoginRes = z.object({
       id: z.number(),
       name: z.string(),
       email: z.string(),
-      role: z.enum([Role.Owner, Role.Employee])
-    })
+      role: z.enum([Role.Owner, Role.Employee]),
+    }),
   }),
-  message: z.string()
-})
+  message: z.string(),
+});
 
-export type LoginResType = z.TypeOf<typeof LoginRes>
+export type LoginResType = z.TypeOf<typeof LoginRes>;
 
 export const RefreshTokenBody = z
   .object({
-    refreshToken: z.string()
+    refreshToken: z.string(),
   })
-  .strict()
+  .strict();
 
-export type RefreshTokenBodyType = z.TypeOf<typeof RefreshTokenBody>
+export type RefreshTokenBodyType = z.TypeOf<typeof RefreshTokenBody>;
 
 export const RefreshTokenRes = z.object({
   data: z.object({
     accessToken: z.string(),
-    refreshToken: z.string()
+    refreshToken: z.string(),
   }),
-  message: z.string()
-})
+  message: z.string(),
+});
 
-export type RefreshTokenResType = z.TypeOf<typeof RefreshTokenRes>
+export type RefreshTokenResType = z.TypeOf<typeof RefreshTokenRes>;
 
 export const LogoutBody = z
   .object({
-    refreshToken: z.string()
+    refreshToken: z.string(),
   })
-  .strict()
+  .strict();
 
-export type LogoutBodyType = z.TypeOf<typeof LogoutBody>
+export type LogoutBodyType = z.TypeOf<typeof LogoutBody>;

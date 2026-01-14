@@ -5,6 +5,9 @@ export interface LoginRes {
   accessToken: string;
   refreshToken: string;
 }
+export interface LogoutRes {
+  message: string;
+}
 const authRequest = {
   serverLogin: (body: LoginBodyType) => http.post<LoginRes>("auth/login", body),
   clientLogin: (body: LoginBodyType) =>
@@ -12,10 +15,24 @@ const authRequest = {
       baseURL: "",
     }),
 
-  serverLogout: (body: LoginBodyType) =>
-    http.post<LoginRes>("auth/logout", body),
+  serverLogout: (
+    body: LogoutBodyType & {
+      accessToken: string;
+    }
+  ) =>
+    http.post<LogoutRes>(
+      "auth/logout",
+      {
+        refreshToken: body.refreshToken,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${body.accessToken}`,
+        },
+      }
+    ),
   clientLogout: (body: LogoutBodyType) =>
-    http.post<any>("api/auth/logout", body, {
+    http.post<LogoutRes>("api/auth/logout", body, {
       baseURL: "",
     }),
 };

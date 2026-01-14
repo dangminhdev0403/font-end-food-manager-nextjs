@@ -47,7 +47,6 @@ export default function LoginForm() {
         variant: "error",
       });
     } finally {
-  
       setLoading(false);
     }
   };
@@ -62,7 +61,6 @@ export default function LoginForm() {
       <CardContent className="space-y-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* EMAIL */}
             <FormField
               control={form.control}
               name="email"

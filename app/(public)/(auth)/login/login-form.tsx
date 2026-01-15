@@ -16,6 +16,7 @@ import { useLoginMutation } from "@/queries/useAuth";
 import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -23,6 +24,7 @@ export default function LoginForm() {
   const loginMutation = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
@@ -41,6 +43,7 @@ export default function LoginForm() {
         description: "Đăng nhập thành công",
         variant: "success",
       });
+      router.push("/manage/dashboard");
     } catch (error: any) {
       toast({
         description: error.message as string,

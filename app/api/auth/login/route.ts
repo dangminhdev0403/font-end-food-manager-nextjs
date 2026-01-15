@@ -24,14 +24,14 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       sameSite: "lax",
       secure: isProduction,
-      expires: decodedAccessToken.exp * 1000,
+      expires: decodedAccessToken.exp * 100000,
     });
     (await cookieStore).set("refreshToken", refreshToken, {
       path: "/",
       httpOnly: true,
       sameSite: "lax",
       secure: isProduction,
-      expires: decodedRefreshToken.exp * 1000,
+      expires: decodedRefreshToken.exp * 100000,
     });
 
     return responseSuccess(res);

@@ -9,14 +9,29 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "@/components/ui/use-toast";
+import { useLogoutMutation } from "@/queries/useAuth";
 import Link from "next/link";
-
+import { useRouter } from "next/navigation";
 const account = {
   name: "Nguyễn Văn A",
   avatar: "https://i.pravatar.cc/150",
 };
 
 export default function DropdownAvatar() {
+  const logoutMutation = useLogoutMutation();
+  const router = useRouter();
+  const handleLogout = async () => {
+    if (logoutMutation.isPending) return;
+    try {
+      await logoutMutation.mutateAsync();
+      router.push("/");
+      toast({
+        description: "Đăng xuất thành công",
+        variant: "success",
+      });
+    } catch (error) {}
+  };
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -47,7 +62,7 @@ export default function DropdownAvatar() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem >Đăng xuất</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

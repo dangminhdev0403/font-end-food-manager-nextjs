@@ -1,94 +1,102 @@
-'use client'
+"use client";
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 
-import { TrendingUp } from 'lucide-react'
-import { Bar, BarChart, XAxis, YAxis } from 'recharts'
-
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
 const colors = [
-  'var(--color-chrome)',
-  'var(--color-safari)',
-  'var(--color-firefox)',
-  'var(--color-edge)',
-  'var(--color-other)'
-]
+  "var(--color-chart-1)",
+  "var(--color-chart-2)",
+  "var(--color-chart-3)",
+  "var(--color-chart-4)",
+  "var(--color-chart-5)",
+];
 
 const chartConfig = {
   visitors: {
-    label: 'Visitors'
+    label: "Visitors",
   },
   chrome: {
-    label: 'Chrome',
-    color: 'hsl(var(--chart-1))'
+    label: "Phở",
+    color: "hsl(210 100% 50%)",
   },
   safari: {
-    label: 'Safari',
-    color: 'hsl(var(--chart-2))'
+    label: "Bánh Mì",
+    color: "hsl(45 100% 50%)",
   },
   firefox: {
-    label: 'Firefox',
-    color: 'hsl(var(--chart-3))'
+    label: "Cơm Tấm",
+    color: "hsl(30 100% 50%)",
   },
   edge: {
-    label: 'Edge',
-    color: 'hsl(var(--chart-4))'
+    label: "Gỏi Cuốn",
+    color: "hsl(120 100% 40%)",
   },
   other: {
-    label: 'Other',
-    color: 'hsl(var(--chart-5))'
-  }
-} satisfies ChartConfig
+    label: "Khác",
+    color: "hsl(270 100% 50%)",
+  },
+} satisfies ChartConfig;
+
 const chartData = [
-  { name: 'chrome', successOrders: 275, fill: 'var(--color-chrome)' },
-  { name: 'safari', successOrders: 200, fill: 'var(--color-safari)' },
-  { name: 'firefox', successOrders: 187, fill: 'var(--color-firefox)' },
-  { name: 'edge', successOrders: 173, fill: 'var(--color-edge)' },
-  { name: 'other', successOrders: 90, fill: 'var(--color-other)' }
-]
+  { name: "Phở", successOrders: 275, fill: "hsl(210 100% 50%)" },
+  { name: "Bánh Mì", successOrders: 200, fill: "hsl(45 100% 50%)" },
+  { name: "Cơm Tấm", successOrders: 187, fill: "hsl(30 100% 50%)" },
+  { name: "Gỏi Cuốn", successOrders: 173, fill: "hsl(120 100% 40%)" },
+  { name: "Khác", successOrders: 90, fill: "hsl(270 100% 50%)" },
+];
+
 export function DishBarChart() {
   return (
-    <Card>
+    <Card className="border-0 shadow-none">
       <CardHeader>
-        <CardTitle>Xếp hạng món ăn</CardTitle>
-        <CardDescription>Được gọi nhiều nhất</CardDescription>
+        <CardTitle className="text-lg font-semibold">Xếp hạng món ăn</CardTitle>
+        <CardDescription>
+          Được gọi nhiều nhất trong thời gian quy định
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
-          <BarChart
-            accessibilityLayer
-            data={chartData}
-            layout='vertical'
-            margin={{
-              left: 0
-            }}
-          >
-            <YAxis
-              dataKey='name'
-              type='category'
-              tickLine={false}
-              tickMargin={2}
-              axisLine={false}
-              tickFormatter={(value) => {
-                return value
-
-                // return chartConfig[value as keyof typeof chartConfig]?.label
-              }}
-            />
-            <XAxis dataKey='successOrders' type='number' hide />
-            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-            <Bar dataKey='successOrders' name={'Đơn thanh toán'} layout='vertical' radius={5} />
-          </BarChart>
+        <ChartContainer config={chartConfig} className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              accessibilityLayer
+              data={chartData}
+              layout="vertical"
+              margin={{ left: 100, right: 10, top: 5, bottom: 5 }}
+            >
+              <YAxis
+                dataKey="name"
+                type="category"
+                tickLine={false}
+                tickMargin={10}
+                axisLine={false}
+                width={100}
+                tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
+              />
+              <XAxis dataKey="successOrders" type="number" hide />
+              <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+              <Bar
+                dataKey="successOrders"
+                name="Đơn thanh toán"
+                layout="vertical"
+                radius={[0, 8, 8, 0]}
+                fill="url(#gradient)"
+              />
+            </BarChart>
+          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
-      <CardFooter className='flex-col items-start gap-2 text-sm'>
-        {/* <div className='flex gap-2 font-medium leading-none'>
-          Trending up by 5.2% this month <TrendingUp className='h-4 w-4' />
-        </div> */}
-        {/* <div className='leading-none text-muted-foreground'>
-          Showing total visitors for the last 6 months
-        </div> */}
-      </CardFooter>
     </Card>
-  )
+  );
 }

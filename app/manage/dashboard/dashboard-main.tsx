@@ -1,124 +1,129 @@
-'use client'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { RevenueLineChart } from '@/app/manage/dashboard/revenue-line-chart'
-import { DishBarChart } from '@/app/manage/dashboard/dish-bar-chart'
-import { formatCurrency } from '@/lib/utils'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+"use client";
+
+import { DishBarChart } from "@/app/manage/dashboard/dish-bar-chart";
+import { RevenueLineChart } from "@/app/manage/dashboard/revenue-line-chart";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ArrowUpRight } from "lucide-react";
 
 export default function DashboardMain() {
-  const resetDateFilter = () => {}
+  const resetDateFilter = () => {};
+
+  const metrics = [
+    {
+      title: "Tổng doanh thu",
+      value: "0",
+      icon: "💰",
+      trend: "+5.2%",
+      color: "from-blue-600 to-blue-400",
+    },
+    {
+      title: "Khách",
+      value: "0",
+      subtitle: "Gọi món",
+      icon: "👥",
+      trend: "+12%",
+      color: "from-emerald-600 to-emerald-400",
+    },
+    {
+      title: "Đơn hàng",
+      value: "0",
+      subtitle: "Đã thanh toán",
+      icon: "📋",
+      trend: "+8.1%",
+      color: "from-orange-600 to-orange-400",
+    },
+    {
+      title: "Bàn đang phục vụ",
+      value: "0",
+      icon: "🪑",
+      trend: "+3.5%",
+      color: "from-purple-600 to-purple-400",
+    },
+  ];
 
   return (
-    <div className='space-y-4'>
-      <div className='flex flex-wrap gap-2'>
-        <div className='flex items-center'>
-          <span className='mr-2'>Từ</span>
-          <Input type='datetime-local' placeholder='Từ ngày' className='text-sm' />
+    <div className="space-y-6">
+      {/* Date filter */}
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="flex gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-slate-500">
+                Từ ngày
+              </label>
+              <Input type="date" className="w-40" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-slate-500">
+                Đến ngày
+              </label>
+              <Input type="date" className="w-40" />
+            </div>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={resetDateFilter}
+            className="text-slate-500"
+          >
+            Reset bộ lọc
+          </Button>
         </div>
-        <div className='flex items-center'>
-          <span className='mr-2'>Đến</span>
-          <Input type='datetime-local' placeholder='Đến ngày' />
-        </div>
-        <Button className='' variant={'outline'} onClick={resetDateFilter}>
-          Reset
-        </Button>
       </div>
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Tổng doanh thu</CardTitle>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth='2'
-              className='h-4 w-4 text-muted-foreground'
+
+      {/* KPI */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {metrics.map((m, i) => (
+          <div
+            key={i}
+            className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 transition hover:-translate-y-1 hover:shadow-lg"
+          >
+            <div
+              className={`w-10 h-10 rounded-lg bg-gradient-to-br ${m.color} flex items-center justify-center text-white mb-4`}
             >
-              <path d='M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>0</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Khách</CardTitle>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth='2'
-              className='h-4 w-4 text-muted-foreground'
-            >
-              <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
-              <circle cx='9' cy='7' r='4' />
-              <path d='M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>0</div>
-            <p className='text-xs text-muted-foreground'>Gọi món</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Đơn hàng</CardTitle>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth='2'
-              className='h-4 w-4 text-muted-foreground'
-            >
-              <rect width='20' height='14' x='2' y='5' rx='2' />
-              <path d='M2 10h20' />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>0</div>
-            <p className='text-xs text-muted-foreground'>Đã thanh toán</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Bàn đang phục vụ</CardTitle>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth='2'
-              className='h-4 w-4 text-muted-foreground'
-            >
-              <path d='M22 12h-4l-3 9L9 3l-3 9H2' />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>0</div>
-          </CardContent>
-        </Card>
+              <span className="text-lg">{m.icon}</span>
+            </div>
+
+            <p className="text-sm text-slate-500">{m.title}</p>
+
+            <div className="mt-1 text-3xl font-bold text-slate-900 dark:text-white">
+              {m.value}
+            </div>
+
+            {m.subtitle && (
+              <p className="text-xs text-slate-400 mt-1">{m.subtitle}</p>
+            )}
+
+            <div className="mt-4 flex items-center gap-1 text-xs font-medium text-emerald-600">
+              <ArrowUpRight className="w-3 h-3" />
+              {m.trend}
+            </div>
+          </div>
+        ))}
       </div>
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-7'>
-        <div className='lg:col-span-4'>
-          <RevenueLineChart />
+
+      {/* Charts */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <div className="lg:col-span-4">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+            <h3 className="text-sm font-semibold mb-2">
+              Doanh thu theo thời gian
+            </h3>
+            <RevenueLineChart />
+          </div>
         </div>
-        <div className='lg:col-span-3'>
-          <DishBarChart />
+
+        <div className="lg:col-span-3">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+            <h3 className="text-sm font-semibold mb-2">
+              Xếp hạng món ăn
+            </h3>
+            <DishBarChart />
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

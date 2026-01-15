@@ -31,10 +31,14 @@ const authRequest = {
         },
       }
     ),
-  clientLogout: (body: LogoutBodyType) =>
-    http.post<LogoutRes>("api/auth/logout", body, {
-      baseURL: "",
-    }),
+  clientLogout: () =>
+    http.post<LogoutRes>(
+      "api/auth/logout",
+      {},
+      {
+        baseURL: "",
+      }
+    ),
 };
 
 export default authRequest;

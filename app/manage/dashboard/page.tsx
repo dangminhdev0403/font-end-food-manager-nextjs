@@ -1,24 +1,20 @@
 import DashboardMain from "@/app/manage/dashboard/dashboard-main";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+
 export default async function Dashboard() {
   return (
-    <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-      <div className="space-y-2">
-        <Card x-chunk="dashboard-06-chunk-0">
-          <CardHeader>
-            <CardTitle>Dashboard</CardTitle>
-            <CardDescription>Phân tích các chỉ số</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DashboardMain />
-          </CardContent>
-        </Card>
+    <main className="min-h-screen w-full flex-1 bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+      <div className="px-6 sm:px-6 py-6 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+            Dashboard
+          </h1>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Phân tích nhanh hiệu quả kinh doanh
+          </p>
+        </div>
+
+        <DashboardMain />
       </div>
     </main>
   );

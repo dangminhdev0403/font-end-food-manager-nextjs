@@ -1,107 +1,131 @@
-'use client'
+"use client";
+import {
+  Line,
+  LineChart,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
-import { TrendingUp } from 'lucide-react'
-import { CartesianGrid, Line, LineChart, XAxis } from 'recharts'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { format, parse } from 'date-fns'
 const chartConfig = {
-  desktop: {
-    label: 'Desktop',
-    color: 'hsl(var(--chart-1))'
-  }
-} satisfies ChartConfig
+  revenue: {
+    label: "Doanh thu",
+    color: "hsl(210 100% 50%)",
+  },
+  target: {
+    label: "Mục tiêu",
+    color: "hsl(120 100% 40%)",
+  },
+} satisfies ChartConfig;
+
+const chartData = [
+  {
+    date: "01/01",
+    revenue: 2400,
+    target: 2400,
+  },
+  {
+    date: "02/01",
+    revenue: 1398,
+    target: 2210,
+  },
+  {
+    date: "03/01",
+    revenue: 9800,
+    target: 2290,
+  },
+  {
+    date: "04/01",
+    revenue: 3908,
+    target: 2000,
+  },
+  {
+    date: "05/01",
+    revenue: 4800,
+    target: 2181,
+  },
+  {
+    date: "06/01",
+    revenue: 3800,
+    target: 2500,
+  },
+  {
+    date: "07/01",
+    revenue: 4300,
+    target: 2100,
+  },
+];
 
 export function RevenueLineChart() {
-  // fake 10 item
-  const chartData = [
-    {
-      date: '01/01/2024',
-      revenue: 1000
-    },
-    {
-      date: '02/01/2024',
-      revenue: 2000
-    },
-    {
-      date: '03/01/2024',
-      revenue: 1500
-    },
-    {
-      date: '04/01/2024',
-      revenue: 3000
-    },
-    {
-      date: '05/01/2024',
-      revenue: 2500
-    },
-    {
-      date: '06/01/2024',
-      revenue: 4000
-    },
-    {
-      date: '07/01/2024',
-      revenue: 3500
-    },
-    {
-      date: '08/01/2024',
-      revenue: 5000
-    },
-    {
-      date: '09/01/2024',
-      revenue: 4500
-    },
-    {
-      date: '10/01/2024',
-      revenue: 6000
-    }
-  ]
   return (
-    <Card>
+    <Card className="border-0 shadow-none">
       <CardHeader>
-        <CardTitle>Doanh thu</CardTitle>
-        {/* <CardDescription>January - June 2024</CardDescription> */}
+        <CardTitle className="text-lg font-semibold">
+          Doanh thu theo thời gian
+        </CardTitle>
+        <CardDescription>Biểu đồ doanh thu 7 ngày gần nhất</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
-          <LineChart
-            accessibilityLayer
-            data={chartData}
-            margin={{
-              left: 12,
-              right: 12
-            }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey='date'
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tickFormatter={(value) => {
-                if (chartData.length < 8) {
-                  return value
-                }
-                if (chartData.length < 33) {
-                  const date = parse(value, 'dd/MM/yyyy', new Date())
-                  return format(date, 'dd')
-                }
-                return ''
-              }}
-            />
-            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator='dashed' />} />
-            <Line dataKey='revenue' type='linear' stroke='var(--color-desktop)' strokeWidth={2} dot={false} />
-          </LineChart>
+        <ChartContainer config={chartConfig} className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={chartData}
+              margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="hsl(var(--border))"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="date"
+                stroke="hsl(var(--muted-foreground))"
+                style={{ fontSize: "12px" }}
+              />
+              <YAxis
+                stroke="hsl(var(--muted-foreground))"
+                style={{ fontSize: "12px" }}
+              />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Legend wrapperStyle={{ paddingTop: "20px" }} />
+              <Line
+                type="monotone"
+                dataKey="revenue"
+                stroke="hsl(210 100% 50%)"
+                strokeWidth={2}
+                dot={{ fill: "hsl(210 100% 50%)", r: 4 }}
+                activeDot={{ r: 6 }}
+                name="Doanh thu"
+              />
+              <Line
+                type="monotone"
+                dataKey="target"
+                stroke="hsl(120 100% 40%)"
+                strokeWidth={2}
+                strokeDasharray="5 5"
+                dot={{ fill: "hsl(120 100% 40%)", r: 4 }}
+                activeDot={{ r: 6 }}
+                name="Mục tiêu"
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
-      <CardFooter className='flex-col items-start gap-2 text-sm'>
-        {/* <div className='flex gap-2 font-medium leading-none'>
-          Trending up by 5.2% this month <TrendingUp className='h-4 w-4' />
-        </div>
-        <div className='leading-none text-muted-foreground'>
-          Showing total visitors for the last 6 months
-        </div> */}
-      </CardFooter>
     </Card>
-  )
+  );
 }

@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 const menuItems = [
   {
     title: "Trang chủ",
-    href: "/home",
+    href: "/",
   },
   {
     title: "Món ăn",

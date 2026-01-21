@@ -30,7 +30,14 @@ export default function DropdownAvatar() {
         description: "Đăng xuất thành công",
         variant: "success",
       });
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+
+      toast({
+        description: "Đăng xuất thất bại",
+        variant: "error",
+      });
+    }
   };
   return (
     <DropdownMenu>

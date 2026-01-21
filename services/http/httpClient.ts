@@ -55,9 +55,8 @@ http.interceptors.request.use((config: AxiosRequestConfig) => {
   if (isClient) {
     const token = localStorage.getItem("accessToken");
     if (token) {
-      (
-        config.headers as Record<string, string>
-      ).Authorization = `Bearer ${token}`;
+      (config.headers as Record<string, string>).Authorization =
+        `Bearer ${token}`;
     }
   }
 
@@ -102,7 +101,7 @@ http.interceptors.response.use(
     });
 
     return Promise.reject(formattedError);
-  }
+  },
 );
 
 // --- Wrapper method hỗ trợ dynamic baseUrl ---
@@ -110,7 +109,7 @@ export async function request<T>(
   method: "GET" | "POST" | "PUT" | "DELETE",
   url: string,
   data?: any,
-  options?: AxiosRequestConfig & { baseUrl?: string }
+  options?: AxiosRequestConfig & { baseUrl?: string },
 ): Promise<T> {
   let baseURL: string | undefined;
 
@@ -134,7 +133,7 @@ export const httpClient = {
   post: <T>(
     url: string,
     data?: any,
-    options?: AxiosRequestConfig & { baseUrl?: string }
+    options?: AxiosRequestConfig & { baseUrl?: string },
   ) => request<T>("POST", url, data, options),
 
   get: <T>(url: string, options?: AxiosRequestConfig & { baseUrl?: string }) =>

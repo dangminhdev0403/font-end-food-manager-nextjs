@@ -4,7 +4,6 @@ import { DishBarChart } from "@/app/manage/dashboard/dish-bar-chart";
 import { RevenueLineChart } from "@/app/manage/dashboard/revenue-line-chart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowUpRight } from "lucide-react";
 
 export default function DashboardMain() {
   const resetDateFilter = () => {};
@@ -14,7 +13,7 @@ export default function DashboardMain() {
       title: "Tổng doanh thu",
       value: "0",
       icon: "💰",
-      trend: "+5.2%",
+
       color: "from-blue-600 to-blue-400",
     },
     {
@@ -22,7 +21,7 @@ export default function DashboardMain() {
       value: "0",
       subtitle: "Gọi món",
       icon: "👥",
-      trend: "+12%",
+
       color: "from-emerald-600 to-emerald-400",
     },
     {
@@ -30,14 +29,14 @@ export default function DashboardMain() {
       value: "0",
       subtitle: "Đã thanh toán",
       icon: "📋",
-      trend: "+8.1%",
+
       color: "from-orange-600 to-orange-400",
     },
     {
       title: "Bàn đang phục vụ",
       value: "0",
       icon: "🪑",
-      trend: "+3.5%",
+
       color: "from-purple-600 to-purple-400",
     },
   ];
@@ -49,13 +48,19 @@ export default function DashboardMain() {
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="flex gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-slate-500">
+              <label
+                className="text-xs font-medium text-slate-500"
+                aria-label="from-day"
+              >
                 Từ ngày
               </label>
               <Input type="date" className="w-40" />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-slate-500">
+              <label
+                className="text-xs font-medium text-slate-500"
+                aria-label="to-day"
+              >
                 Đến ngày
               </label>
               <Input type="date" className="w-40" />
@@ -81,7 +86,7 @@ export default function DashboardMain() {
             className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 transition hover:-translate-y-1 hover:shadow-lg"
           >
             <div
-              className={`w-10 h-10 rounded-lg bg-gradient-to-br ${m.color} flex items-center justify-center text-white mb-4`}
+              className={`w-10 h-10 rounded-lg bg-linear-to-br ${m.color} flex items-center justify-center text-white mb-4`}
             >
               <span className="text-lg">{m.icon}</span>
             </div>
@@ -95,11 +100,6 @@ export default function DashboardMain() {
             {m.subtitle && (
               <p className="text-xs text-slate-400 mt-1">{m.subtitle}</p>
             )}
-
-            <div className="mt-4 flex items-center gap-1 text-xs font-medium text-emerald-600">
-              <ArrowUpRight className="w-3 h-3" />
-              {m.trend}
-            </div>
           </div>
         ))}
       </div>
@@ -117,9 +117,7 @@ export default function DashboardMain() {
 
         <div className="lg:col-span-3">
           <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
-            <h3 className="text-sm font-semibold mb-2">
-              Xếp hạng món ăn
-            </h3>
+            <h3 className="text-sm font-semibold mb-2">Xếp hạng món ăn</h3>
             <DishBarChart />
           </div>
         </div>

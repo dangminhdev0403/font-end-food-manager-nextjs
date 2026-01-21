@@ -201,6 +201,9 @@
 html {
   scroll-behavior: smooth;
 }
+button {
+  cursor: pointer !important;
+}
 
 /* Custom scrollbar for dark theme */
 ::-webkit-scrollbar {

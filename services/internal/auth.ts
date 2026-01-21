@@ -33,7 +33,7 @@ const authRequest = {
     ),
   clientLogout: () =>
     http.post<LogoutRes>(
-      "api/auth/logout",
+      "/api/auth/logout",
       {},
       {
         baseURL: "",

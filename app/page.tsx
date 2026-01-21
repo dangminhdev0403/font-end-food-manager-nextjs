@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
+import Link from "next/link";
 const menuItems = [
   {
     id: 1,
@@ -383,14 +384,16 @@ export default function Home() {
             delay={600}
             className="text-center mt-16"
           >
-            <MagneticButton
-              variant="outline"
-              size="lg"
-              className="border-amber-600/40 text-amber-100 hover:bg-amber-600 hover:text-white hover:border-amber-500 px-12"
-            >
-              Xem toàn bộ thực đơn
-              <ArrowRight className="ml-2 w-4 h-4" />
-            </MagneticButton>
+            <Link href="/menu">
+              <MagneticButton
+                variant="outline"
+                size="lg"
+                className="border-amber-600/40 text-amber-100 hover:bg-amber-600 hover:text-white hover:border-amber-500 px-12"
+              >
+                Xem toàn bộ thực đơn
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </MagneticButton>
+            </Link>
           </AnimatedSection>
         </div>
       </motion.section>

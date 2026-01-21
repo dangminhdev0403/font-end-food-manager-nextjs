@@ -49,7 +49,6 @@ export default function LoginForm() {
         description: error.message as string,
         variant: "error",
       });
-    } finally {
       setLoading(false);
     }
   };

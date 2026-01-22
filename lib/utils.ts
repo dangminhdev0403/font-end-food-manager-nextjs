@@ -1,5 +1,5 @@
 import { toast } from "@/components/ui/use-toast";
-import { ApiError } from "@/services/http/httpClient";
+import { ApiError } from "@/services/http/apiError";
 import { AxiosResponse } from "axios";
 import { clsx, type ClassValue } from "clsx";
 import { NextResponse } from "next/server";
@@ -19,45 +19,37 @@ export const formatCurrency = (number: number) => {
   }).format(number);
 };
 
-export function responseSuccess<T>(res: AxiosResponse<T>) {
-  // Chỉ trả data, không trả nguyên AxiosResponse
-  return NextResponse.json(res, { status: res.status });
-}
 
 //!  Hanlde  API BACKEND
 export const normalizePath = (path: string) => {
   return path.startsWith("/") ? path.slice(1) : path;
 };
+// utils/response.ts
+
+
+export function responseSuccess<T>(data: T, status = 200) {
+  return NextResponse.json(data, { status });
+}
 
 export function responseError(error: unknown) {
-  const isApi =
-    (error as ApiError)?.name === "ApiError" && "status" in (error as any);
-
-  if (isApi) {
-    const apiError = error as ApiError;
+  if (error instanceof ApiError) {
     return NextResponse.json(
       {
-        status: apiError.status,
-        error: apiError.error,
-        message: apiError.message,
-        data: apiError.data ?? null,
+        status: error.status,
+        error: error.error,
+        message: error.message,
+        data: error.data ?? null,
       },
-      { status: apiError.status }
+      { status: error.status },
     );
   }
 
-  console.error(error);
-
   return NextResponse.json(
-    {
-      status: 500,
-      error: "Internal Server Error",
-      message: "Lỗi linh tinh nào đó chưa xử lí",
-      data: null,
-    },
-    { status: 500 }
+    { status: 500, error: "Internal Server Error", message: "Unknown error" },
+    { status: 500 },
   );
 }
+
 //? handleErrorApi
 export const handleErrorApi = ({
   error,

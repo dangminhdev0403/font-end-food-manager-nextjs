@@ -1,32 +1,50 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAccountProfileQuery } from "@/queries/useAccount";
 import {
   UpdateMeBody,
   UpdateMeBodyType,
 } from "@/schemaValidations/account.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Upload } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function UpdateProfileForm() {
   const [file, setFile] = useState<File | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
-
+  const { data } = useAccountProfileQuery();
+  
+  const profile = data?.data;
   const form = useForm<UpdateMeBodyType>({
     resolver: zodResolver(UpdateMeBody),
-    defaultValues: { name: "", avatar: "" , email: "" },
+    defaultValues: { name: profile?.name, avatar: "", email: profile?.email },
   });
 
   const avatar = form.watch("avatar");
   const email = form.watch("email");
   const name = form.watch("name");
   const previewAvatar = file ? URL.createObjectURL(file) : avatar;
+  useEffect(() => {
+    if (!profile) return;
+
+    form.reset({
+      name: profile.name,
+      email: profile.email,
+      // avatar: profile.avatar,
+    });
+  }, [profile, form]);
 
   return (
     <Form {...form}>

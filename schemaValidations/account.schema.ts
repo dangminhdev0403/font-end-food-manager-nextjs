@@ -93,22 +93,39 @@ export const UpdateMeBody = z
 
 export type UpdateMeBodyType = z.TypeOf<typeof UpdateMeBody>;
 
+
 export const ChangePasswordBody = z
   .object({
-    oldPassword: z.string().min(6).max(100),
-    password: z.string().min(6).max(100),
-    confirmPassword: z.string().min(6).max(100),
+    oldPassword: z
+      .string()
+      .min(6, { message: "Mật khẩu hiện tại phải có ít nhất 6 ký tự" })
+      .max(100, { message: "Mật khẩu hiện tại không được vượt quá 100 ký tự" }),
+
+    newPassword: z
+      .string()
+      .min(6, { message: "Mật khẩu mới phải có ít nhất 6 ký tự" })
+      .max(100, { message: "Mật khẩu mới không được vượt quá 100 ký tự" }),
+
+    confirmPassword: z
+      .string()
+      .min(6, { message: "Xác nhận mật khẩu phải có ít nhất 6 ký tự" })
+      .max(100, { message: "Xác nhận mật khẩu không được vượt quá 100 ký tự" }),
+
+    refreshToken: z.string({
+      message: "Refresh token là bắt buộc",
+    }),
   })
   .strict()
-  .superRefine(({ confirmPassword, password }, ctx) => {
-    if (confirmPassword !== password) {
+  .superRefine(({ newPassword, confirmPassword }, ctx) => {
+    if (newPassword !== confirmPassword) {
       ctx.addIssue({
-        code: "custom",
-        message: "Mật khẩu mới không khớp",
+        code: z.ZodIssueCode.custom,
         path: ["confirmPassword"],
+        message: "Xác nhận mật khẩu không khớp với mật khẩu mới",
       });
     }
   });
+
 
 export type ChangePasswordBodyType = z.TypeOf<typeof ChangePasswordBody>;
 

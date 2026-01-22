@@ -1,7 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
+import { profileApiRequest } from "@/services/internal/account";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
-export const useAccountProfile = () => {
+export const useAccountProfileQuery = () => {
   return useQuery({
     queryKey: ["account-profile"],
+    queryFn: () => profileApiRequest.getProfile(),
+  });
+};
+
+export const useUpdateProfileMutation = () => {
+  return useMutation({
+    mutationFn: profileApiRequest.updatePasswordServerClient,
   });
 };

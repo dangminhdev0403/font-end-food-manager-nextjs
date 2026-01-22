@@ -1,44 +1,44 @@
+import { httpClient } from "@/services/http/httpClient";
+import { httpServer } from "@/services/http/httpServer";
 import { LoginBodyType, LogoutBodyType } from "@/schemaValidations/auth.schema";
-import { http } from "@/services/http/httpClient";
 
+// ===== Types =====
 export interface LoginRes {
   accessToken: string;
   refreshToken: string;
 }
+
 export interface LogoutRes {
   message: string;
 }
-const authRequest = {
-  serverLogin: (body: LoginBodyType) => http.post<LoginRes>("auth/login", body),
-  clientLogin: (body: LoginBodyType) =>
-    http.post<LoginRes>("api/auth/login", body, {
-      baseURL: "",
-    }),
 
-  serverLogout: (
-    body: LogoutBodyType & {
-      accessToken: string;
-    }
-  ) =>
-    http.post<LogoutRes>(
-      "auth/logout",
-      {
-        refreshToken: body.refreshToken,
-      },
+// ===== API Layer =====
+const authRequest = {
+  // Browser → Backend
+  clientLogin: (body: LoginBodyType) =>
+    httpClient.post<LoginRes>("/auth/login", body),
+
+  // Browser → Next API proxy
+  clientLoginProxy: (body: LoginBodyType) =>
+    httpClient.post<LoginRes>("/api/auth/login", body),
+
+  // Next API → Backend
+  serverLogin: (body: LoginBodyType) =>
+    httpServer.post<LoginRes>("/auth/login", body),
+
+  serverLogout: (body: LogoutBodyType & { accessToken: string }) =>
+    httpServer.post<LogoutRes>(
+      "/auth/logout",
+      { refreshToken: body.refreshToken },
       {
         headers: {
           Authorization: `Bearer ${body.accessToken}`,
         },
-      }
+      },
     ),
-  clientLogout: () =>
-    http.post<LogoutRes>(
-      "/api/auth/logout",
-      {},
-      {
-        baseURL: "",
-      }
-    ),
+
+  clientLogoutProxy: () =>
+    httpClient.post<LogoutRes>("/api/auth/logout"),
 };
 
 export default authRequest;

@@ -5,7 +5,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -61,7 +60,7 @@ export default function DropdownAvatar() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>{profile?.name}</DropdownMenuLabel>
+        {/* <DropdownMenuLabel>{profile?.name}</DropdownMenuLabel> */}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href={"/manage/setting"} className="cursor-pointer">

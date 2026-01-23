@@ -28,14 +28,21 @@ export interface UpdatePasswordRes {
 // ===== API Layer =====
 export const profileApiRequest = {
   // Client UI call backend directly
-  getProfileClient: () =>
-    httpClient.get<ProfileRes>("/profile/me"),
+  getProfileClient: async () => httpClient.get<ProfileRes>("/api/profile/me"),
+  getProfileServer: (accessToken: string) =>
+    httpServer.get<ProfileRes>("/profile/me", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }),
 
   // Next Route Handler → Backend
-  updatePasswordServer: (body: UpdatePasswordBody) =>
-    httpServer.put<UpdatePasswordRes>("/profile/change-password", body),
+  updatePasswordServer: (body: UpdatePasswordBody, accessToken: string) =>
+    httpServer.put<UpdatePasswordRes>("/profile/change-password", body, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }),
 
   // Browser → Next API proxy
-  updatePasswordClientProxy: (body: UpdatePasswordBody) =>
+  updatePasswordClient: (body: UpdatePasswordBody) =>
     httpClient.put<UpdatePasswordRes>("/api/profile/change-password", body),
 };

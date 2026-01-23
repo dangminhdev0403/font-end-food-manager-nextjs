@@ -4,12 +4,12 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 export const useAccountProfileQuery = () => {
   return useQuery({
     queryKey: ["account-profile"],
-    queryFn: () => profileApiRequest.getProfile(),
+    queryFn: profileApiRequest.getProfileClient,
   });
 };
 
 export const useUpdateProfileMutation = () => {
   return useMutation({
-    mutationFn: profileApiRequest.updatePasswordServerClient,
+    mutationFn: profileApiRequest.updatePasswordClient,
   });
 };

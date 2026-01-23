@@ -51,6 +51,12 @@ export default function ChangePasswordForm() {
       toast({ description: "Đổi mật khẩu thành công", variant: "success" });
     } catch (error: any) {
       toast({ description: error.message, variant: "error" });
+    } finally {
+      setTimeout(() => {
+        globalThis.location.reload();
+      }, 1500);
+      form.reset();
+      globalThis.location.reload();
     }
   };
 

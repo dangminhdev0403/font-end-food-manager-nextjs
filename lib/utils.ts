@@ -1,6 +1,5 @@
 import { toast } from "@/components/ui/use-toast";
 import { ApiError } from "@/services/http/apiError";
-import { AxiosResponse } from "axios";
 import { clsx, type ClassValue } from "clsx";
 import { NextResponse } from "next/server";
 import { UseFormSetError } from "react-hook-form";
@@ -19,13 +18,11 @@ export const formatCurrency = (number: number) => {
   }).format(number);
 };
 
-
 //!  Hanlde  API BACKEND
 export const normalizePath = (path: string) => {
   return path.startsWith("/") ? path.slice(1) : path;
 };
 // utils/response.ts
-
 
 export function responseSuccess<T>(data: T, status = 200) {
   return NextResponse.json(data, { status });

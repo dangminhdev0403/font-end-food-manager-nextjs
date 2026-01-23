@@ -15,10 +15,8 @@ export async function POST(req: NextRequest) {
 
     // Gọi API login backend
     const res = await authRequest.serverLogin(body);
-    console.log(res);
 
     const { accessToken, refreshToken } = res.data;
-    console.log(res);
 
     const decodedAccessToken = jwt.decode(accessToken) as { exp: number };
     const decodedRefreshToken = jwt.decode(refreshToken) as { exp: number };

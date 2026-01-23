@@ -1,13 +1,11 @@
 "use client";
 
-import envConfig from "@/config";
 import { UpdatePasswordRes } from "@/services/internal/account";
 import { LoginRes } from "@/services/internal/auth";
-import axios, { AxiosError, AxiosHeaders, AxiosResponse } from "axios";
-import { ApiError, ApiResponse } from "./apiError";
+import axios, { AxiosError, AxiosHeaders } from "axios";
+import { ApiError } from "./apiError";
 
 export const httpClient = axios.create({
-  baseURL: envConfig.NEXT_PUBLIC_API_ENDPOINT,
   headers: { "Content-Type": "application/json" },
   timeout: 10_000,
 });
@@ -24,7 +22,7 @@ httpClient.interceptors.request.use((config) => {
 
 // Response interceptor
 httpClient.interceptors.response.use(
-  <T>(res: AxiosResponse<ApiResponse<T>>) => {
+  (res) => {
     const url = res.config.url ?? "";
 
     if (url.includes("/login")) {
@@ -44,7 +42,7 @@ httpClient.interceptors.response.use(
       localStorage.removeItem("refreshToken");
     }
 
-    return res;
+    return res.data;
   },
 
   (error: AxiosError) => {

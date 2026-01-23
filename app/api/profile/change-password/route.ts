@@ -11,22 +11,28 @@ export async function PUT(req: NextRequest) {
   try {
     // Lấy payload từ client
     const body = await req.json();
-    const cookieStore = cookies();
-
+    const cookieStore = await cookies();
+    const accessTokenOld = cookieStore.get("accessToken")?.value || "";
     // Gọi API login backend
-    const res = await profileApiRequest.updatePasswordServer(body);
+    console.log("token raw:", accessTokenOld);
+
+    const res = await profileApiRequest.updatePasswordServer(
+      body,
+      accessTokenOld,
+    );
     const { accessToken, refreshToken } = res.data.tokens;
+    console.log("Route pass-chang here :", { accessToken, refreshToken });
 
     const decodedAccessToken = jwt.decode(accessToken) as { exp: number };
     const decodedRefreshToken = jwt.decode(refreshToken) as { exp: number };
-    (await cookieStore).set("accessToken", accessToken, {
+    cookieStore.set("accessToken", accessToken, {
       path: "/",
       httpOnly: true,
       sameSite: "lax",
       secure: isProduction,
       expires: decodedAccessToken.exp * 100000,
     });
-    (await cookieStore).set("refreshToken", refreshToken, {
+    cookieStore.set("refreshToken", refreshToken, {
       path: "/",
       httpOnly: true,
       sameSite: "lax",

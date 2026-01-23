@@ -7,11 +7,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import ChangePasswordForm from "@/app/manage/setting/change-password-form";
 import UpdateProfileForm from "@/app/manage/setting/update-profile-form";
+import { useAccountProfileQuery } from "@/queries/useAccount";
 
 /* =========================
    PAGE
 ========================= */
 export default function SettingPage() {
+  const { data } = useAccountProfileQuery();
+  const profile = data?.data;
   return (
     <main className="flex-1 space-y-6 p-6 text-lg">
       {/* Header */}
@@ -24,7 +27,7 @@ export default function SettingPage() {
             Quản lý thông tin cá nhân và bảo mật
           </p>
         </div>
-        <Badge variant="secondary">Owner</Badge>
+        <Badge variant="secondary">{profile?.name}</Badge>
       </div>
 
       {/* Profile Summary */}
@@ -53,15 +56,19 @@ export default function SettingPage() {
    PROFILE SUMMARY
 ========================= */
 function ProfileSummary() {
+  const { data } = useAccountProfileQuery();
+  const profile = data?.data;
   return (
     <Card className="flex items-center gap-4 p-6">
       <Avatar className="h-16 w-16">
         <AvatarImage src="" />
-        <AvatarFallback>U</AvatarFallback>
+        <AvatarFallback>
+          {profile?.name.slice(0, 2).toUpperCase()}
+        </AvatarFallback>
       </Avatar>
 
       <div className="flex-1">
-        <p className="text-lg font-medium">User Name</p>
+        <p className="text-lg font-medium">{profile?.name}</p>
         <p className="text-md text-muted-foreground">Owner • Active</p>
       </div>
     </Card>

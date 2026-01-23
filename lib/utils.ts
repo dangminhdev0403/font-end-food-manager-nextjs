@@ -1,4 +1,5 @@
 import { toast } from "@/components/ui/use-toast";
+import { DishStatus } from "@/constants/types/auth.type";
 import { ApiError } from "@/services/http/apiError";
 import { clsx, type ClassValue } from "clsx";
 import { NextResponse } from "next/server";
@@ -10,6 +11,18 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 //! helper
+export const getVietnameseDishStatus = (
+  status: (typeof DishStatus)[keyof typeof DishStatus],
+) => {
+  switch (status) {
+    case DishStatus.Available:
+      return "Có sẵn";
+    case DishStatus.Unavailable:
+      return "Không có sẵn";
+    default:
+      return "Ẩn";
+  }
+};
 
 export const formatCurrency = (number: number) => {
   return new Intl.NumberFormat("vi-VN", {

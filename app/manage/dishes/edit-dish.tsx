@@ -75,30 +75,39 @@ export default function EditDish({
         }
       }}
     >
-      <DialogContent className="sm:max-w-[600px] max-h-screen overflow-auto">
-        <DialogHeader>
-          <DialogTitle>Cập nhật món ăn</DialogTitle>
-          <DialogDescription>
-            Các trường sau đây là bắ buộc: Tên, ảnh
+      <DialogContent className="sm:max-w-[600px] max-h-screen overflow-auto bg-white">
+        <DialogHeader className="border-b border-slate-200 pb-4">
+          <DialogTitle className="text-2xl text-slate-900">
+            ✏️ Cập nhật món ăn
+          </DialogTitle>
+          <DialogDescription className="text-slate-600 mt-2">
+            Chỉnh sửa thông tin của món ăn. Các trường{" "}
+            <span className="text-red-500 font-semibold">*</span> là bắt buộc.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
             noValidate
-            className="grid auto-rows-max items-start gap-4 md:gap-8"
+            className="grid auto-rows-max items-start gap-6 py-6"
             id="edit-dish-form"
           >
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-6">
               <FormField
                 control={form.control}
                 name="image"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex gap-2 items-start justify-start">
-                      <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
-                        <AvatarImage src={previewAvatarFromFile} />
-                        <AvatarFallback className="rounded-none">
-                          {name || "Avatar"}
+                    <Label className="text-slate-700 font-semibold">
+                      Ảnh món ăn{" "}
+                      <span className="text-red-500 font-semibold">*</span>
+                    </Label>
+                    <div className="flex gap-4 items-start justify-start pt-2">
+                      <Avatar className="aspect-square w-[120px] h-[120px] rounded-lg object-cover border-2 border-slate-200 shadow-md">
+                        <AvatarImage
+                          src={previewAvatarFromFile || "/placeholder.svg"}
+                        />
+                        <AvatarFallback className="rounded-none bg-slate-100">
+                          <div className="text-3xl">🍽️</div>
                         </AvatarFallback>
                       </Avatar>
                       <input
@@ -117,30 +126,39 @@ export default function EditDish({
                         className="hidden"
                       />
                       <button
-                        className="flex aspect-square w-[100px] items-center justify-center rounded-md border border-dashed"
+                        className="flex flex-col aspect-square w-[120px] items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-blue-400 transition-all cursor-pointer"
                         type="button"
                         onClick={() => imageInputRef.current?.click()}
                       >
-                        <Upload className="h-4 w-4 text-muted-foreground" />
+                        <Upload className="h-5 w-5 text-slate-600 mb-1" />
+                        <span className="text-xs text-slate-600 font-medium">
+                          Tải lên
+                        </span>
                         <span className="sr-only">Upload</span>
                       </button>
                     </div>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="name">Tên món ăn</Label>
-                      <div className="col-span-3 w-full space-y-2">
-                        <Input id="name" className="w-full" {...field} />
-                        <FormMessage />
-                      </div>
-                    </div>
+                    <Label
+                      htmlFor="name"
+                      className="text-slate-700 font-semibold"
+                    >
+                      Tên món ăn <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="name"
+                      className="w-full mt-2 bg-white border-slate-300 placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Nhập tên món ăn..."
+                      {...field}
+                    />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -149,18 +167,20 @@ export default function EditDish({
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="price">Giá</Label>
-                      <div className="col-span-3 w-full space-y-2">
-                        <Input
-                          id="price"
-                          className="w-full"
-                          {...field}
-                          type="number"
-                        />
-                        <FormMessage />
-                      </div>
-                    </div>
+                    <Label
+                      htmlFor="price"
+                      className="text-slate-700 font-semibold"
+                    >
+                      Giá (VNĐ)
+                    </Label>
+                    <Input
+                      id="price"
+                      className="w-full mt-2 bg-white border-slate-300 placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="0"
+                      {...field}
+                      type="number"
+                    />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -169,17 +189,19 @@ export default function EditDish({
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="description">Mô tả sản phẩm</Label>
-                      <div className="col-span-3 w-full space-y-2">
-                        <Textarea
-                          id="description"
-                          className="w-full"
-                          {...field}
-                        />
-                        <FormMessage />
-                      </div>
-                    </div>
+                    <Label
+                      htmlFor="description"
+                      className="text-slate-700 font-semibold"
+                    >
+                      Mô tả sản phẩm
+                    </Label>
+                    <Textarea
+                      id="description"
+                      className="w-full mt-2 bg-white border-slate-300 placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500 min-h-24 resize-none"
+                      placeholder="Mô tả chi tiết về món ăn..."
+                      {...field}
+                    />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -188,39 +210,43 @@ export default function EditDish({
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="description">Trạng thái</Label>
-                      <div className="col-span-3 w-full space-y-2">
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Chọn trạng thái" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {DishStatusValues.map((status) => (
-                              <SelectItem key={status} value={status}>
-                                {getVietnameseDishStatus(status)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <FormMessage />
-                    </div>
+                    <Label
+                      htmlFor="status"
+                      className="text-slate-700 font-semibold"
+                    >
+                      Trạng thái
+                    </Label>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full mt-2 bg-white border-slate-300 placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500">
+                          <SelectValue placeholder="Chọn trạng thái" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {DishStatusValues.map((status) => (
+                          <SelectItem key={status} value={status}>
+                            {getVietnameseDishStatus(status)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
           </form>
         </Form>
-        <DialogFooter>
-          <Button type="submit" form="edit-dish-form">
-            Lưu
+        <DialogFooter className="border-t border-slate-200 pt-6">
+          <Button
+            type="submit"
+            form="edit-dish-form"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition-all"
+          >
+            💾 Lưu thay đổi
           </Button>
         </DialogFooter>
       </DialogContent>

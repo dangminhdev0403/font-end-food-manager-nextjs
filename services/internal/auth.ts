@@ -7,6 +7,10 @@ export interface LoginRes {
   accessToken: string;
   refreshToken: string;
 }
+export interface RefreshTokenRes {
+  accessToken: string;
+  refreshToken: string;
+}
 
 export interface LogoutRes {
   message: string;
@@ -33,6 +37,15 @@ const authRequest = {
     ),
 
   clientLogout: () => httpClient.post<LogoutRes>("/api/auth/logout"),
+
+  clientRefreshToken: () =>
+    httpClient.post<RefreshTokenRes>("/api/auth/refresh-token"),
+  serverRefreshToken: (accessToken: string , body:{ refreshToken:string}) =>
+    httpServer.post<RefreshTokenRes >("/auth/refresh-token",body, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }),
 };
 
 export default authRequest;

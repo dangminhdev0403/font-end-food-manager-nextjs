@@ -12,10 +12,9 @@ export function proxy(req: NextRequest) {
   ) {
     return NextResponse.next();
   }
-  const token = req.cookies.get("accessToken");
-  console.log("path:", pathname, "token:", !!token);
+  const refresh = req.cookies.get("refreshToken");
 
-  const isAuth = Boolean(token?.value);
+  const isAuth = Boolean(refresh?.value);
   const isPrivate = privatePaths.some((p) => pathname.startsWith(p));
 
   // ❌ chưa login mà vào private

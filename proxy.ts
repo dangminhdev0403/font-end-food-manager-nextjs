@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const privatePaths = ["/manage", "/profile", "/admin"];
+export const privatePaths = ["/manage", "/profile", "/admin", "logout"];
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -12,18 +12,26 @@ export function proxy(req: NextRequest) {
   ) {
     return NextResponse.next();
   }
-  const refresh = req.cookies.get("refreshToken");
 
-  const isAuth = Boolean(refresh?.value);
+  const refresh = req.cookies.get("refreshToken")?.value;
+  const isAuth = Boolean(refresh);
+
   const isPrivate = privatePaths.some((p) => pathname.startsWith(p));
 
-  // ❌ chưa login mà vào private
+  // ❌ chưa login mà vào private (hoặc refreshToken đã hết hạn )
   if (!isAuth && isPrivate) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    const url = new URL("/login", req.url);
+
+    return NextResponse.redirect(url);
   }
+  const isLogout = pathname === "/logout";
 
   // ✅ đã login mà vẫn vào login
-  if (isAuth && pathname === "/login") {
+  if (!isLogout && isAuth && pathname === "/login") {
+    console.log(isLogout);
+
+    console.log(pathname);
+
     return NextResponse.redirect(new URL("/", req.url));
   }
   return NextResponse.next();

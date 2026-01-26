@@ -8,38 +8,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toast } from "@/components/ui/use-toast";
 import { useAccountProfileQuery } from "@/queries/useAccount";
-import { useLogoutMutation } from "@/queries/useAuth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function DropdownAvatar() {
-  const logoutMutation = useLogoutMutation();
   const router = useRouter();
   const { data } = useAccountProfileQuery();
   const profile = data?.data;
 
-  const handleLogout = async () => {
-    if (logoutMutation.isPending) return;
-    try {
-      await logoutMutation.mutateAsync();
-      router.push("/");
-      toast({
-        description: "Đăng xuất thành công",
-        variant: "success",
-      });
-    } catch (error) {
-      router.push("/");
+  const handleLogout = () => {
+    const refreshToken = localStorage.getItem("refreshToken");
 
-      console.log(error);
+    const params = new URLSearchParams({
+      refreshToken: refreshToken ?? "",
+    });
 
-      toast({
-        description: "Đăng xuất thành công",
-        variant: "success",
-      });
-    }
+    router.push(`/logout?${params.toString()}`);
   };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google";
 // @ts-ignore
+import { cookies } from "next/headers";
 import "./globals.css";
 
 const fontSans = FontSans({
@@ -16,17 +17,19 @@ export const metadata: Metadata = {
   description: "The best restaurant in the world",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const refresh = (await cookies()).get("refreshToken")?.value;
+  const isAuth = Boolean(refresh);
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable
+          fontSans.variable,
         )}
       >
         <AppProvider>

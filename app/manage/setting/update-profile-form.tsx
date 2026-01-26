@@ -40,8 +40,8 @@ export default function UpdateProfileForm() {
     if (!profile) return;
 
     form.reset({
-      name: profile.name,
-      email: profile.email,
+      name: profile?.name,
+      email: profile?.email,
       // avatar: profile.avatar,
     });
   }, [profile, form]);

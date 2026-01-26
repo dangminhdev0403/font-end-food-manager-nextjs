@@ -1,4 +1,5 @@
 import { LoginBodyType, LogoutBodyType } from "@/schemaValidations/auth.schema";
+import { ApiResponse } from "@/services/http/apiError";
 import { httpClient } from "@/services/http/httpClient";
 import { httpServer } from "@/services/http/httpServer";
 
@@ -18,6 +19,7 @@ export interface LogoutRes {
 
 // ===== API Layer =====
 const authRequest = {
+  refreshTokenRequest: null as Promise<ApiResponse<RefreshTokenRes>> | null,
   // Browser → Backend
   clientLogin: (body: LoginBodyType) =>
     httpClient.post<LoginRes>("api/auth/login", body),
@@ -39,13 +41,27 @@ const authRequest = {
   clientLogout: () => httpClient.post<LogoutRes>("/api/auth/logout"),
 
   clientRefreshToken: () =>
-    httpClient.post<RefreshTokenRes>("/api/auth/refresh-token"),
-  serverRefreshToken: (accessToken: string , body:{ refreshToken:string}) =>
-    httpServer.post<RefreshTokenRes >("/auth/refresh-token",body, {
+    httpClient.post<RefreshTokenRes>("/api/auth/refresh"),
+  serverRefreshToken: (accessToken: string, body: { refreshToken: string }) =>
+    httpServer.post<RefreshTokenRes>("/auth/refresh-token", body, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     }),
+  async refreshToken() {
+    console.log("Function Refresh Run");
+
+    if (this.refreshTokenRequest) {
+      return this.refreshTokenRequest;
+    }
+    this.refreshTokenRequest = httpClient.post<RefreshTokenRes>(
+      "/api/auth/refresh",
+      null,
+    );
+    const result = await this.refreshTokenRequest;
+    this.refreshTokenRequest = null;
+    return result;
+  },
 };
 
 export default authRequest;

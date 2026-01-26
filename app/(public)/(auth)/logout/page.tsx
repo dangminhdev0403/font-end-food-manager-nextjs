@@ -2,17 +2,43 @@
 
 import { Spinner } from "@/components/ui/spinner";
 import { useHandleLogout } from "@/lib/hooks/useHandleLogout";
-import { useEffect } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function LogoutPage() {
-  const { handleLogout, isLoading } = useHandleLogout();
+  const searchParams = useSearchParams();
+  const refreshTokenFromUrl = searchParams.get("refreshToken");
 
+  const pathname = usePathname();
+
+  const { handleLogout } = useHandleLogout();
+  const [refreshTokenStored, setRefreshTokenStored] = useState<string | null>(
+    null,
+  );
+  const router = useRouter();
   useEffect(() => {
-    handleLogout();
+    setRefreshTokenStored(localStorage.getItem("refreshToken"));
   }, []);
 
+  useEffect(() => {
+    if (!refreshTokenFromUrl) {
+      router.back();
+      return;
+    }
+    if (!refreshTokenStored) {
+      router.back();
+      return;
+    }
+    if (refreshTokenFromUrl !== refreshTokenStored) {
+      router.back();
+      return;
+    }
+
+    handleLogout();
+  }, [refreshTokenFromUrl, refreshTokenStored]);
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-background dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors duration-500">
+    <div className="fixed inset-0 flex items-center justify-center bg-background dark:bg-linear-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors duration-500">
       {/* Animated background elements - Dark mode only */}
       <div className="absolute inset-0 overflow-hidden dark:block hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />

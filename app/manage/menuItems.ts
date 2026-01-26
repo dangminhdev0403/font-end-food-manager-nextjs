@@ -1,10 +1,10 @@
 import {
   Home,
+  LayoutGrid,
   LineChart,
   Salad,
   ShieldCheck,
   ShoppingCart,
-  Table,
   UserCog,
 } from "lucide-react";
 
@@ -15,17 +15,17 @@ const menuItems = [
     href: "/manage/dashboard",
   },
   {
-    title: "Đơn hàng",
+    title: "Quản lí Đơn hàng",
     Icon: ShoppingCart,
     href: "/manage/orders",
   },
   {
-    title: "Bàn ăn",
-    Icon: Table,
+    title: "Quản lí Bàn ăn",
+    Icon: LayoutGrid,
     href: "/manage/tables",
   },
   {
-    title: "Món ăn",
+    title: "Quản lí Món ăn",
     Icon: Salad,
     href: "/manage/dishes",
   },
@@ -34,11 +34,6 @@ const menuItems = [
     title: "Phân tích",
     Icon: LineChart,
     href: "/manage/analytics",
-  },
-  {
-    title: "Món ăn",
-    Icon: Salad,
-    href: "/manage/dishes",
   },
 
   {

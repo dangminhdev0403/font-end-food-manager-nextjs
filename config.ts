@@ -3,11 +3,14 @@ import { z } from "zod";
 const configSchema = z.object({
   NEXT_PUBLIC_ENVIRONMENT: z.string(),
   NEXT_PUBLIC_API_ENDPOINT: z.string(),
+  NEXT_PUBLIC_CHECK_REFRESH_IN_MINISECONDS: z.string(),
 });
 
 const configProject = configSchema.safeParse({
   NEXT_PUBLIC_API_ENDPOINT: process.env.NEXT_PUBLIC_API_ENDPOINT,
   NEXT_PUBLIC_ENVIRONMENT: process.env.NEXT_PUBLIC_ENVIRONMENT,
+  NEXT_PUBLIC_CHECK_REFRESH_IN_MINISECONDS:
+    process.env.NEXT_PUBLIC_CHECK_REFRESH_IN_MINISECONDS,
 });
 if (!configProject.success) {
   console.error(configProject.error.issues);

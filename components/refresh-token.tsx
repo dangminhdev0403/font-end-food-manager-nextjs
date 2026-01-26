@@ -1,4 +1,5 @@
 "use client";
+import envConfig from "@/config";
 import { privatePaths } from "@/proxy";
 import authRequest from "@/services/internal/auth";
 import jwt from "jsonwebtoken";
@@ -28,7 +29,7 @@ export default function RefreshToken() {
         exp: number;
         iat: number;
       };
-      const now = Math.round(Date.now() / 1000);
+      const now = Date.now() / 1000 - 1;
       if (refreshTokenDecoded.exp <= now) return;
       if (
         accessTokenDecoded.exp - now <=
@@ -48,7 +49,10 @@ export default function RefreshToken() {
       }
     };
     checkAndRefresh();
-    interval = setInterval(checkAndRefresh, 5 * 1000);
+    interval = setInterval(
+      checkAndRefresh,
+      Number.parseInt(envConfig.NEXT_PUBLIC_CHECK_REFRESH_IN_MINISECONDS),
+    );
     return () => clearInterval(interval);
   }, [pathname]);
   return <div></div>;

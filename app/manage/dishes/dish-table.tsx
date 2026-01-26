@@ -245,17 +245,17 @@ export default function DishTable() {
         />
 
         {/* Search and Add Bar */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex-1">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-6 pt-6">
+          <div className="flex-1 max-w-sm">
             <Input
-              placeholder="🔍 Tìm kiếm theo tên món ăn..."
+              placeholder="Tìm kiếm theo tên món..."
               value={
                 (table.getColumn("name")?.getFilterValue() as string) ?? ""
               }
               onChange={(event) =>
                 table.getColumn("name")?.setFilterValue(event.target.value)
               }
-              className="max-w-md bg-white border-slate-300 placeholder:text-slate-400 focus:border-blue-500 focus:ring-blue-500"
+              className="h-10 rounded-lg border-border bg-background focus:border-primary focus:ring-primary/20"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -264,83 +264,84 @@ export default function DishTable() {
         </div>
 
         {/* Table Container */}
-        <div className="rounded-lg border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow
+                  key={headerGroup.id}
+                  className="border-b border-border bg-muted/30 hover:bg-muted/40 transition-colors"
+                >
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead
+                        key={header.id}
+                        className="text-foreground font-semibold text-sm px-6 py-4"
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                      </TableHead>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
                   <TableRow
-                    key={headerGroup.id}
-                    className="bg-slate-50 border-b border-slate-200 hover:bg-slate-50"
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className="border-b border-border/50 hover:bg-muted/40 transition-colors"
                   >
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <TableHead
-                          key={header.id}
-                          className="text-slate-700 font-semibold"
-                        >
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
-                        </TableHead>
-                      );
-                    })}
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        className="text-foreground px-6 py-4"
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
                   </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                      className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors"
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className="text-slate-800">
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-32 text-center"
-                    >
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <div className="text-4xl">🍽️</div>
-                        <p className="text-slate-600 font-medium">
-                          Không có kết quả
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          Hãy thêm một món ăn để bắt đầu
-                        </p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-40 text-center border-0"
+                  >
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <div className="text-5xl">🍽️</div>
+                      <p className="text-foreground font-semibold mt-2">
+                        Không có kết quả
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Thêm một món ăn để bắt đầu
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
 
         {/* Footer with Pagination */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-slate-600">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-border/50 px-6 py-4">
+          <div className="text-sm text-muted-foreground">
             Hiển thị{" "}
-            <span className="font-semibold text-slate-900">
+            <span className="font-semibold text-foreground">
               {table.getPaginationRowModel().rows.length}
             </span>{" "}
             trong{" "}
-            <span className="font-semibold text-slate-900">{data.length}</span>{" "}
+            <span className="font-semibold text-foreground">{data.length}</span>{" "}
             kết quả
           </div>
           <div>

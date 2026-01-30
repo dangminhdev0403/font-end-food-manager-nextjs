@@ -5,6 +5,7 @@ import {
   Salad,
   ShieldCheck,
   ShoppingCart,
+  Users,
   UserCog,
 } from "lucide-react";
 
@@ -34,6 +35,12 @@ const menuItems = [
     title: "Phân tích",
     Icon: LineChart,
     href: "/manage/analytics",
+  },
+
+  {
+    title: "Quản lí Nhân Viên",
+    Icon: Users,
+    href: "/manage/employees",
   },
 
   {

@@ -37,12 +37,17 @@ export default function RefreshToken() {
       ) {
         try {
           const res = await authRequest.refreshToken();
-          console.log("Data refresh ==", res);
 
           localStorage.setItem("accessToken", res.data.accessToken);
           localStorage.setItem("refreshToken", res.data.refreshToken);
-        } catch (err) {
-          console.log(err);
+        } catch (err: any) {
+          if (err?.status === 401) {
+            const params = new URLSearchParams({
+              refreshToken: refreshToken ?? "",
+            });
+
+            router.push(`/logout?${params.toString()}`);
+          }
 
           clearInterval(interval);
         }

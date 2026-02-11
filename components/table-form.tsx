@@ -2,7 +2,6 @@
 
 import React from "react";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,16 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-interface Table {
-  name: string;
-  capacity: number;
-  status: "available" | "occupied" | "reserved";
-}
+import { TableItem } from "@/services/internal/admin/table";
+import { useState } from "react";
 
 interface TableFormProps {
-  initialData?: Table & { id: number };
-  onSubmit: (data: Table) => void;
+  initialData?: TableItem & { id: number };
+  onSubmit: (data: TableItem) => void;
   onClose: () => void;
 }
 
@@ -31,11 +26,14 @@ export default function TableForm({
   onSubmit,
   onClose,
 }: TableFormProps) {
-  const [formData, setFormData] = useState<Table>(
+  const [formData, setFormData] = useState<TableItem>(
     initialData || {
-      name: "",
-      capacity: 2,
-      status: "available",
+      id: 1,
+      name: "MINH",
+      capacity: 4,
+      orderedDishes: [],
+      qrToken: "test",
+      status: "EMPTY",
     },
   );
 
@@ -82,7 +80,7 @@ export default function TableForm({
           onValueChange={(value) =>
             setFormData({
               ...formData,
-              status: value as "available" | "occupied" | "reserved",
+              status: value as "EMPTY" | "OCCUPIED" | "RESERVED",
             })
           }
         >

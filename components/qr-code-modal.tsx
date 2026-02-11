@@ -1,145 +1,110 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Download, Copy } from "lucide-react";
+import { Check, Copy, Download } from "lucide-react";
+import { QRCodeCanvas } from "qrcode.react";
+import { useEffect, useRef, useState } from "react";
 
 interface QRCodeModalProps {
-  tableId: number;
+  tableToken: string;
   tableName: string;
   onClose: () => void;
 }
 
 export default function QRCodeModal({
-  tableId,
+  tableToken,
   tableName,
   onClose,
 }: QRCodeModalProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const qrRef = useRef<HTMLDivElement>(null);
+  const [qrValue, setQrValue] = useState("");
   const [copied, setCopied] = useState(false);
 
+  // Tránh hydration mismatch
   useEffect(() => {
-    generateQRCode();
-  }, [tableId]);
-
-  const generateQRCode = async () => {
-    if (!canvasRef.current) return;
-
-    try {
-      // Dynamically import QRCode library
-      const { QRCodeCanvas } = require("qrcode.react");
-
-      // We'll use a simple implementation with canvas
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      // Simple QR code-like pattern for demonstration
-      const size = 300;
-      canvas.width = size;
-      canvas.height = size;
-
-      // White background
-      ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, size, size);
-
-      // Dark pattern
-      ctx.fillStyle = "#1a1a1a";
-
-      // Create a deterministic pattern based on tableId
-      const cellSize = size / 25;
-      const seed = tableId * 12345;
-
-      for (let i = 0; i < 25; i++) {
-        for (let j = 0; j < 25; j++) {
-          const hash = ((seed + i * 31 + j * 37) % 256) / 256;
-          if (
-            hash > 0.5 ||
-            (i < 7 && j < 7) ||
-            (i < 7 && j > 17) ||
-            (i > 17 && j < 7)
-          ) {
-            ctx.fillRect(i * cellSize, j * cellSize, cellSize, cellSize);
-          }
-        }
-      }
-
-      // Add white border
-      ctx.strokeStyle = "white";
-      ctx.lineWidth = 8;
-      ctx.strokeRect(0, 0, size, size);
-    } catch (error) {
-      console.error("Error generating QR code:", error);
-    }
-  };
-
-  const qrValue = `${window.location.origin}/table/${tableId}`;
+    setQrValue(`${window.location.origin}/table/${tableToken}`);
+  }, [tableToken]);
 
   const handleDownload = () => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const link = document.createElement("a");
-      link.href = canvas.toDataURL("image/png");
-      link.download = `${tableName}-QR.png`;
-      link.click();
-    }
+    const canvas = qrRef.current?.querySelector("canvas");
+    if (!canvas) return;
+
+    const link = document.createElement("a");
+    link.href = canvas.toDataURL("image/png");
+    link.download = `${tableName}-QR.png`;
+    link.click();
   };
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(qrValue);
+  const handleCopyLink = async () => {
+    if (!qrValue) return;
+    await navigator.clipboard.writeText(qrValue);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
+  if (!qrValue) return null;
+
   return (
-    <Dialog open={true} onOpenChange={onClose}>
+    <Dialog open onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Mã QR - {tableName}</DialogTitle>
+          <DialogTitle className="text-center">Mã QR - {tableName}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col items-center space-y-6 py-4">
-          {/* QR Code Display */}
-          <div className="bg-white p-4 rounded-lg shadow-lg">
-            <canvas ref={canvasRef} className="w-64 h-64" />
+        <div className="flex flex-col items-center gap-6 py-4">
+          {/* QR Section */}
+          <div
+            ref={qrRef}
+            className="bg-white p-6 rounded-2xl shadow-md border"
+          >
+            <QRCodeCanvas value={qrValue} size={220} level="Q"  />
           </div>
 
-          {/* Table Info */}
-          <div className="w-full space-y-2 text-center">
-            <p className="text-sm text-muted-foreground">Đường link bàn ăn:</p>
-            <p className="text-xs bg-muted p-2 rounded font-mono break-all">
-              {qrValue}
+          {/* Link Display */}
+          <div className="w-full space-y-2">
+            <p className="text-xs text-muted-foreground text-center">
+              Link truy cập
             </p>
+            <div className="bg-muted rounded-md px-3 py-2 text-xs font-mono break-all text-center">
+              {qrValue}
+            </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-2 w-full">
-            <Button
-              onClick={handleDownload}
-              className="flex-1 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
+          {/* Actions */}
+          <div className="flex gap-3 w-full">
+            <Button onClick={handleDownload} className="flex-1 gap-2">
               <Download className="h-4 w-4" />
-              Tải Xuống
+              Tải xuống
             </Button>
+
             <Button
               onClick={handleCopyLink}
               variant="outline"
-              className="flex-1 gap-2 bg-transparent"
+              disabled={copied}
+              className="flex-1 gap-2"
             >
-              <Copy className="h-4 w-4" />
-              {copied ? "Đã Sao Chép!" : "Sao Chép Link"}
+              {copied ? (
+                <>
+                  <Check className="h-4 w-4" />
+                  Đã sao chép
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4" />
+                  Sao chép
+                </>
+              )}
             </Button>
           </div>
 
-          {/* Info */}
-          <p className="text-xs text-muted-foreground text-center">
-            Khách có thể quét mã QR này để xem menu và đặt hàng
+          <p className="text-[11px] text-muted-foreground text-center">
+            Khách quét mã để xem menu và đặt món trực tiếp.
           </p>
         </div>
       </DialogContent>

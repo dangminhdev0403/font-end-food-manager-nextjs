@@ -13,8 +13,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
+import { useAdminTableQuery } from "@/queries/admin/useTables";
+import { TableItem, TableStatus } from "@/services/internal/admin/table";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { useTheme } from "next-themes";
 import { useMemo, useState } from "react";
 
 interface Dish {
@@ -28,122 +30,38 @@ interface Table {
   id: number;
   name: string;
   capacity: number;
-  status: "available" | "occupied" | "reserved";
+  status: "empty" | "occupied" | "reserved";
   orderedDishes?: Dish[];
 }
 
 export default function Home() {
-  const { theme, setTheme } = useTheme();
-  const ITEMS_PER_PAGE = 8;
+  const { data, isLoading, isFetching } = useAdminTableQuery();
+  const listTable = data?.items || [];
+  const pageable = data?.meta;
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [tables, setTables] = useState<Table[]>([
-    {
-      id: 1,
-      name: "Bàn 1",
-      capacity: 2,
-      status: "available",
-      orderedDishes: [],
-    },
-    {
-      id: 2,
-      name: "Bàn 2",
-      capacity: 4,
-      status: "occupied",
-      orderedDishes: [
-        { id: "1", name: "Phở Bò", quantity: 2, price: 85000 },
-        { id: "2", name: "Cơm Tấm", quantity: 1, price: 65000 },
-      ],
-    },
-    {
-      id: 3,
-      name: "Bàn 3",
-      capacity: 6,
-      status: "reserved",
-      orderedDishes: [{ id: "1", name: "Gà Roti", quantity: 3, price: 120000 }],
-    },
-    {
-      id: 4,
-      name: "Bàn 4",
-      capacity: 4,
-      status: "available",
-      orderedDishes: [],
-    },
-    {
-      id: 5,
-      name: "Bàn 5",
-      capacity: 8,
-      status: "available",
-      orderedDishes: [],
-    },
-    {
-      id: 6,
-      name: "Bàn 6",
-      capacity: 2,
-      status: "occupied",
-      orderedDishes: [
-        { id: "1", name: "Mì Xào Hải Sản", quantity: 1, price: 95000 },
-      ],
-    },
-    {
-      id: 7,
-      name: "Bàn 7",
-      capacity: 4,
-      status: "available",
-      orderedDishes: [],
-    },
-    {
-      id: 8,
-      name: "Bàn 8",
-      capacity: 6,
-      status: "reserved",
-      orderedDishes: [],
-    },
-    {
-      id: 9,
-      name: "Bàn 9",
-      capacity: 2,
-      status: "occupied",
-      orderedDishes: [
-        { id: "1", name: "Vịt Nướng", quantity: 2, price: 150000 },
-        { id: "2", name: "Nước Ép", quantity: 2, price: 25000 },
-      ],
-    },
-    {
-      id: 10,
-      name: "Bàn 10",
-      capacity: 8,
-      status: "available",
-      orderedDishes: [],
-    },
-  ]);
-
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
+  const [selectedTable, setSelectedTable] = useState<TableItem | null>(null);
   const [qrTableId, setQrTableId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "available" | "occupied" | "reserved"
-  >("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | TableStatus>("all");
 
-  const handleAddTable = (newTable: Omit<Table, "id" | "orderedDishes">) => {
-    const id = Math.max(...tables.map((t) => t.id), 0) + 1;
-    setTables([...tables, { ...newTable, id, orderedDishes: [] }]);
+  const handleAddTable = (
+    newTable: Omit<TableItem, "id" | "orderedDishes">,
+  ) => {
+    const id = Math.max(...listTable.map((t) => t.id), 0) + 1;
     setIsAddDialogOpen(false);
   };
 
-  const handleUpdateTable = (updatedTable: Table) => {
-    setTables(tables.map((t) => (t.id === updatedTable.id ? updatedTable : t)));
+  const handleUpdateTable = (updatedTable: TableItem) => {
     setSelectedTable(null);
   };
 
-  const handleDeleteTable = (id: number) => {
-    setTables(tables.filter((t) => t.id !== id));
-  };
+  const handleDeleteTable = (id: number) => {};
 
   const filteredTables = useMemo(
     () =>
-      tables.filter((table) => {
+      listTable.filter((table) => {
         const matchesSearch = table.name
           .toLowerCase()
           .includes(searchTerm.toLowerCase());
@@ -151,24 +69,22 @@ export default function Home() {
           statusFilter === "all" || table.status === statusFilter;
         return matchesSearch && matchesStatus;
       }),
-    [tables, searchTerm, statusFilter],
+    [listTable, searchTerm, statusFilter],
   );
 
-  const totalPages = Math.ceil(filteredTables.length / ITEMS_PER_PAGE);
-  const paginatedTables = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredTables.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filteredTables, currentPage]);
+  const totalPages = pageable?.totalPages || 0;
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
   };
 
-  const availableCount = tables.filter((t) => t.status === "available").length;
-  const occupiedCount = tables.filter((t) => t.status === "occupied").length;
-  const reservedCount = tables.filter((t) => t.status === "reserved").length;
-
+  const emptyCount = listTable.filter((t) => t.status === "EMPTY").length;
+  const occupiedCount = listTable.filter((t) => t.status === "OCCUPIED").length;
+  const reservedCount = listTable.filter((t) => t.status === "RESERVED").length;
+  if (isLoading) {
+    return <Spinner />;
+  }
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-200">
       {/* Header */}
@@ -195,7 +111,7 @@ export default function Home() {
               Tổng Bàn
             </div>
             <div className="text-3xl sm:text-4xl font-bold text-primary mt-3">
-              {tables.length}
+              {listTable.length}
             </div>
           </Card>
           <Card className="p-5 sm:p-6 bg-card border-2 border-border hover:shadow-md transition-shadow">
@@ -203,7 +119,7 @@ export default function Home() {
               Trống
             </div>
             <div className="text-3xl sm:text-4xl font-bold text-green-600 dark:text-green-400 mt-3">
-              {availableCount}
+              {emptyCount}
             </div>
           </Card>
           <Card className="p-5 sm:p-6 bg-card border-2 border-border hover:shadow-md transition-shadow">
@@ -262,24 +178,24 @@ export default function Home() {
             }}
             className="font-medium"
           >
-            Tất Cả ({tables.length})
+            Tất Cả ({listTable.length})
           </Button>
           <Button
-            variant={statusFilter === "available" ? "default" : "outline"}
+            variant={statusFilter === "EMPTY" ? "default" : "outline"}
             size="sm"
             onClick={() => {
-              setStatusFilter("available");
+              setStatusFilter("EMPTY");
               setCurrentPage(1);
             }}
             className="font-medium"
           >
-            Trống ({availableCount})
+            Trống ({emptyCount})
           </Button>
           <Button
-            variant={statusFilter === "occupied" ? "default" : "outline"}
+            variant={statusFilter === "OCCUPIED" ? "default" : "outline"}
             size="sm"
             onClick={() => {
-              setStatusFilter("occupied");
+              setStatusFilter("OCCUPIED");
               setCurrentPage(1);
             }}
             className="font-medium"
@@ -287,10 +203,10 @@ export default function Home() {
             Đang Dùng ({occupiedCount})
           </Button>
           <Button
-            variant={statusFilter === "reserved" ? "default" : "outline"}
+            variant={statusFilter === "RESERVED" ? "default" : "outline"}
             size="sm"
             onClick={() => {
-              setStatusFilter("reserved");
+              setStatusFilter("RESERVED");
               setCurrentPage(1);
             }}
             className="font-medium"
@@ -312,10 +228,10 @@ export default function Home() {
             )}
           </div>
 
-          {paginatedTables.length > 0 ? (
+          {listTable.length > 0 ? (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {paginatedTables.map((table) => (
+                {listTable.map((table) => (
                   <TableCard
                     key={table.id}
                     table={table}
@@ -404,8 +320,8 @@ export default function Home() {
         {/* QR Code Modal */}
         {qrTableId !== null && (
           <QRCodeModal
-            tableId={qrTableId}
-            tableName={tables.find((t) => t.id === qrTableId)?.name || ""}
+            tableToken={listTable.find((t) => t.id === qrTableId)?.qrToken || ""}
+            tableName={listTable.find((t) => t.id === qrTableId)?.name || ""}
             onClose={() => setQrTableId(null)}
           />
         )}

@@ -12,10 +12,8 @@ export default function RefreshToken() {
 
   useEffect(() => {
     const isPrivate = privatePaths.some((p) => pathname.startsWith(p));
-    if (!isPrivate) {
-      router.replace("/login");
-      return;
-    }
+    if (!isPrivate) return;
+
     let interval: any = null;
     const checkAndRefresh = async () => {
       const refreshToken = localStorage.getItem("refreshToken");

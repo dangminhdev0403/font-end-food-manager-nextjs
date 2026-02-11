@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const privatePaths = ["/manage", "/profile", "/admin", "logout"];
+export const privatePaths = ["/manage", "/profile", "/admin", "/logout"];
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -27,11 +27,11 @@ export function proxy(req: NextRequest) {
   const isLogout = pathname === "/logout";
 
   // ✅ đã login mà vẫn vào login
+  console.log("pathname:", pathname);
+  console.log("isPrivate:", isPrivate);
+  console.log("isAuth:", isAuth);
+
   if (!isLogout && isAuth && pathname === "/login") {
-    console.log(isLogout);
-
-    console.log(pathname);
-
     return NextResponse.redirect(new URL("/", req.url));
   }
   return NextResponse.next();

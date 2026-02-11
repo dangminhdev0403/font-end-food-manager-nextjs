@@ -534,10 +534,14 @@ export default function Home() {
                     className="w-full px-4 py-3 bg-white/5 border border-amber-300/30 rounded-lg text-white placeholder:text-amber-200/50 focus:border-amber-400/60 focus:bg-white/10 focus:outline-none transition-all duration-300"
                   />
                   <input
+                    aria-label="data"
                     type="date"
                     className="w-full px-4 py-3 bg-white/5 border border-amber-300/30 rounded-lg text-white placeholder:text-amber-200/50 focus:border-amber-400/60 focus:bg-white/10 focus:outline-none transition-all duration-300"
                   />
-                  <select className="w-full px-4 py-3 bg-white/5 border border-amber-300/30 rounded-lg text-white focus:border-amber-400/60 focus:bg-white/10 focus:outline-none transition-all duration-300">
+                  <select
+                    aria-label="member"
+                    className="w-full px-4 py-3 bg-white/5 border border-amber-300/30 rounded-lg text-white focus:border-amber-400/60 focus:bg-white/10 focus:outline-none transition-all duration-300"
+                  >
                     <option value="" className="text-gray-900 bg-white">
                       Số người
                     </option>

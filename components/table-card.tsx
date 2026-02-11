@@ -1,34 +1,20 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { QrCode, Trash2, Edit2, Users, ChefHat } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { TableItem } from "@/services/internal/admin/table";
+import { ChefHat, Edit2, QrCode, Trash2, Users } from "lucide-react";
 import { useState } from "react";
 
-interface Dish {
-  id: string;
-  name: string;
-  quantity: number;
-  price: number;
-}
-
-interface Table {
-  id: number;
-  name: string;
-  capacity: number;
-  status: "available" | "occupied" | "reserved";
-  orderedDishes?: Dish[];
-}
-
 interface TableCardProps {
-  table: Table;
+  table: TableItem;
   onEdit: () => void;
   onDelete: () => void;
   onShowQR: () => void;
 }
 
 const statusConfig = {
-  available: {
+  empty: {
     label: "Trống",
     badgeClass: "bg-green-500 dark:bg-green-600 text-white",
     dotClass: "bg-green-500",
@@ -54,7 +40,8 @@ export default function TableCard({
   onDelete,
   onShowQR,
 }: TableCardProps) {
-  const config = statusConfig[table.status];
+  //@ts-ignore
+  const config = statusConfig[table.status.toLowerCase()];
   const [showDishes, setShowDishes] = useState(false);
   const orderedDishes = table.orderedDishes || [];
 

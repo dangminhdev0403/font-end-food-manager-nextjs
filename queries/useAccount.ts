@@ -1,9 +1,10 @@
+import { queryKeys } from "@/lib/queryKeys";
 import { profileApiRequest } from "@/services/internal/account";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 export const useAccountProfileQuery = () => {
   return useQuery({
-    queryKey: ["account-profile"],
+    queryKey: queryKeys.profile,
     queryFn: profileApiRequest.getProfileClient,
   });
 };

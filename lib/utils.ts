@@ -53,6 +53,7 @@ export function responseError(error: unknown) {
       { status: error.status },
     );
   }
+  console.error(error);
 
   return NextResponse.json(
     { status: 500, error: "Internal Server Error", message: "Unknown error" },

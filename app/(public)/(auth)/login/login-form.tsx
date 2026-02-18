@@ -12,7 +12,8 @@ import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
-import { useLoginMutation } from "@/queries/useAuth";
+
+import { authenticate } from "@/config/authentication/actions";
 import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -21,11 +22,9 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function LoginForm() {
-  const loginMutation = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {
@@ -35,22 +34,24 @@ export default function LoginForm() {
   });
 
   const onSubmit = async (data: LoginBodyType) => {
-    if (loginMutation.isPending) return;
-    try {
-      setLoading(true);
-      await loginMutation.mutateAsync(data);
+    setLoading(true);
+
+    const res = await authenticate(data.email, data.password);
+
+    if (res.success == false) {
+      toast({
+        description: res.message,
+        variant: "error",
+      });
+    } else {
       toast({
         description: "Đăng nhập thành công",
         variant: "success",
       });
+      router.refresh();
       router.push("/manage/dashboard");
-    } catch (error: any) {
-      toast({
-        description: error.message as string,
-        variant: "error",
-      });
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   return (

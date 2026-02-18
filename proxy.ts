@@ -1,10 +1,11 @@
+import { auth } from "@/config/authentication/auth";
 import { NextRequest, NextResponse } from "next/server";
 
-export const privatePaths = ["/manage", "/profile", "/admin", "/logout"];
+export const privatePaths = ["/manage", "/profile", "/admin"];
 
-export function proxy(req: NextRequest) {
+export default auth((req) => {
   const { pathname } = req.nextUrl;
-  // bỏ qua asset & api
+ 
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
@@ -13,26 +14,17 @@ export function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const refresh = req.cookies.get("refreshToken")?.value;
-  const isAuth = Boolean(refresh);
-
   const isPrivate = privatePaths.some((p) => pathname.startsWith(p));
 
-  // ❌ chưa login mà vào private (hoặc refreshToken đã hết hạn )
+  const isAuth = !!req.auth; // ⬅️ thay vì đọc cookie
+
   if (!isAuth && isPrivate) {
-    const url = new URL("/login", req.url);
-
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(new URL("/login", req.url));
   }
-  const isLogout = pathname === "/logout";
 
-  // ✅ đã login mà vẫn vào login
-  console.log("pathname:", pathname);
-  console.log("isPrivate:", isPrivate);
-  console.log("isAuth:", isAuth);
-
-  if (!isLogout && isAuth && pathname === "/login") {
+  if (isAuth && pathname === "/login") {
     return NextResponse.redirect(new URL("/", req.url));
   }
+
   return NextResponse.next();
-}
+});

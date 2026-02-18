@@ -16,7 +16,7 @@ import {
   ChangePasswordBody,
   ChangePasswordBodyType,
 } from "@/schemaValidations/account.schema";
-import { UpdatePasswordBody } from "@/services/internal/account";
+import { UpdatePasswordBody } from "@/services/internal/me/profile.types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";

@@ -2,5 +2,5 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.disableAutomaticTypeAcquisition": true,
-  
+  "codium.codeCompletion.enable": true
 }

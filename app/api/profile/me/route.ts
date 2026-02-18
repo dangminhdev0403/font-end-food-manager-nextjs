@@ -1,7 +1,7 @@
 // app/api/auth/login/route.ts
-import envConfig from "@/config";
+import envConfig from "@/config/env.config";
 import { responseError } from "@/lib/utils";
-import { profileApiRequest } from "@/services/internal/account";
+import { profileServerApi } from "@/services/internal/me/profile.server";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
     const accessToken = cookieStore.get("accessToken")?.value || "";
     // Gọi API login backend
-    const res = await profileApiRequest.getProfileServer(accessToken);
+    const res = await profileServerApi.getProfile(accessToken);
 
     return NextResponse.json(res);
   } catch (err: any) {

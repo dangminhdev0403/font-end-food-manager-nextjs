@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     "local-origin.dev",
     "*.local-origin.dev",
     "http://192.168.1.16:3000",
+    "http://192.168.1.16",
   ],
 
   images: {

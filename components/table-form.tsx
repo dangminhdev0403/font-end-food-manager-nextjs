@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TableItem } from "@/services/internal/admin/table";
+import { TableItem } from "@/services/internal/admin/tables/table.client";
 import { useState } from "react";
 
 interface TableFormProps {

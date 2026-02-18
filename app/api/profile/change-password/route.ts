@@ -1,7 +1,7 @@
 // app/api/auth/login/route.ts
-import envConfig from "@/config";
+import envConfig from "@/config/env.config";
 import { responseError, responseSuccess } from "@/lib/utils";
-import { profileApiRequest } from "@/services/internal/account";
+import { profileServerApi } from "@/services/internal/me/profile.server";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
@@ -16,10 +16,7 @@ export async function PUT(req: NextRequest) {
     // Gọi API login backend
     console.log("token raw:", accessTokenOld);
 
-    const res = await profileApiRequest.updatePasswordServer(
-      body,
-      accessTokenOld,
-    );
+    const res = await profileServerApi.updatePassword(body, accessTokenOld);
     const { accessToken, refreshToken } = res.data.tokens;
     console.log("Route pass-chang here :", { accessToken, refreshToken });
 

@@ -1,11 +1,12 @@
 "use client";
 
-import { UpdatePasswordRes } from "@/services/internal/account";
-import { LoginRes } from "@/services/internal/auth";
+import envConfig from "@/config/env.config";
 import axios, { AxiosError, AxiosHeaders } from "axios";
 import { ApiError } from "./apiError";
 
 export const httpClient = axios.create({
+  baseURL: envConfig.NEXT_PUBLIC_API_BASE_URL,
+  withCredentials: true,
   headers: { "Content-Type": "application/json" },
   timeout: 10_000,
 });
@@ -15,33 +16,13 @@ httpClient.interceptors.request.use((config) => {
   if (!config.headers) {
     config.headers = new AxiosHeaders();
   }
-  const token = localStorage.getItem("accessToken");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+
   return config;
 });
 
 // Response interceptor
 httpClient.interceptors.response.use(
   (res) => {
-    const url = res.config.url ?? "";
-
-    if (url.includes("/login")) {
-      const { accessToken, refreshToken } = res.data.data as LoginRes;
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-    }
-
-    if (url.includes("/profile/change-password")) {
-      const tokens = res.data.data as UpdatePasswordRes;
-      localStorage.setItem("accessToken", tokens.tokens.accessToken);
-      localStorage.setItem("refreshToken", tokens.tokens.refreshToken);
-    }
-
-    if (url.includes("/logout")) {
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-    }
-
     return res.data;
   },
 

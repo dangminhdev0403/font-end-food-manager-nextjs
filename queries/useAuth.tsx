@@ -1,14 +1,14 @@
-import authRequest from "@/services/internal/auth";
+import authClient from "@/services/internal/auth/auth.client";
 import { useMutation } from "@tanstack/react-query";
 
 export const useLoginMutation = () => {
   return useMutation({
-    mutationFn: authRequest.clientLogin,
+    mutationFn: authClient.clientLogin,
   });
 };
 
 export const useLogoutMutation = () => {
   return useMutation({
-    mutationFn: authRequest.clientLogout,
+    mutationFn: authClient.clientLogout,
   });
 };

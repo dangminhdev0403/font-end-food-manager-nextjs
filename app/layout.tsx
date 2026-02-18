@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google";
 
-import { cookies } from "next/headers";
 // @ts-ignore
+import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 
 const fontSans = FontSans({
@@ -23,8 +23,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const refresh = (await cookies()).get("refreshToken")?.value;
-  const isAuth = Boolean(refresh);
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -33,17 +31,19 @@ export default async function RootLayout({
           fontSans.variable,
         )}
       >
-        <AppProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <Toaster />
-          </ThemeProvider>
-        </AppProvider>
+        <SessionProvider>
+          <AppProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </AppProvider>
+        </SessionProvider>
       </body>
     </html>
   );

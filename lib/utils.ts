@@ -46,17 +46,21 @@ export function responseError(error: unknown) {
     return NextResponse.json(
       {
         status: error.status,
-        error: error.error,
+        error: error.error ?? null,
         message: error.message,
         data: error.data ?? null,
       },
       { status: error.status },
     );
   }
-  console.error(error);
 
   return NextResponse.json(
-    { status: 500, error: "Internal Server Error", message: "Unknown error" },
+    {
+      status: 500,
+      error: "Internal Server Error",
+      message: error instanceof Error ? error.message : "Unknown error",
+      data: null,
+    },
     { status: 500 },
   );
 }

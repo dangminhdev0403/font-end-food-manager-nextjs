@@ -14,28 +14,22 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { useAdminTableQuery } from "@/queries/admin/useTables";
-import { TableItem, TableStatus } from "@/services/internal/admin/table";
+import {
+  useAdminAddTableMutation,
+  useAdminTableQuery,
+} from "@/queries/admin/useTables";
+import { TableItem, TableStatus } from "@/services/internal/admin/tables/table.types";
+
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
-interface Dish {
-  id: string;
-  name: string;
-  quantity: number;
-  price: number;
-}
-
-interface Table {
-  id: number;
-  name: string;
-  capacity: number;
-  status: "empty" | "occupied" | "reserved";
-  orderedDishes?: Dish[];
-}
-
 export default function Home() {
-  const { data, isLoading, isFetching } = useAdminTableQuery();
+  const { data, isLoading } = useAdminTableQuery({
+    page: 1,
+    size: 5,
+  });
+  const addTableMutation = useAdminAddTableMutation();
+
   const listTable = data?.items || [];
   const pageable = data?.meta;
   const [currentPage, setCurrentPage] = useState(1);
@@ -46,10 +40,14 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | TableStatus>("all");
 
-  const handleAddTable = (
+  const handleAddTable = async (
     newTable: Omit<TableItem, "id" | "orderedDishes">,
   ) => {
-    const id = Math.max(...listTable.map((t) => t.id), 0) + 1;
+    if (addTableMutation.isPending) return;
+    try {
+      const res = await addTableMutation.mutateAsync(newTable);
+      console.log(res);
+    } catch (error) {}
     setIsAddDialogOpen(false);
   };
 
@@ -320,7 +318,9 @@ export default function Home() {
         {/* QR Code Modal */}
         {qrTableId !== null && (
           <QRCodeModal
-            tableToken={listTable.find((t) => t.id === qrTableId)?.qrToken || ""}
+            tableToken={
+              listTable.find((t) => t.id === qrTableId)?.qrToken || ""
+            }
             tableName={listTable.find((t) => t.id === qrTableId)?.name || ""}
             onClose={() => setQrTableId(null)}
           />

@@ -2,19 +2,15 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Next.js Dev",
+      "name": "Attach Next.js",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "console": "integratedTerminal",
+      "runtimeArgs": [],
       "skipFiles": [
         "<node_internals>/**",
-        "${workspaceFolder}/node_modules/**",
         "**/node_modules/**",
-        "**/next/dist/**",
         "**/.next/**",
-        "**/webpack/**"
+        "**/next/dist/**"
       ],
       "smartStep": true,
       "resolveSourceMapLocations": [

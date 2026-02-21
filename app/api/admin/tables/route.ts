@@ -1,6 +1,6 @@
 import { responseError, responseSuccess } from "@/lib/utils";
 import adminTableServer from "@/services/internal/admin/tables/table.server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,7 +13,9 @@ export async function GET(req: NextRequest) {
       page,
       size,
     });
-
+    console.log("typeof res:", typeof res);
+    console.log("res:", res);
+    console.log("stringify:", JSON.stringify(res));
     return responseSuccess(res);
   } catch (error: any) {
     return responseError(error);

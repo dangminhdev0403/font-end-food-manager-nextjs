@@ -1,5 +1,6 @@
 import { toast } from "@/components/ui/use-toast";
 import { DishStatus } from "@/constants/types/auth.type";
+import { logger } from "@/lib/logger";
 import { ApiError } from "@/services/http/apiError";
 import { clsx, type ClassValue } from "clsx";
 import { NextResponse } from "next/server";
@@ -9,6 +10,7 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+export const privatePaths = ["/manage", "/profile", "/admin"];
 
 //! helper
 export const getVietnameseDishStatus = (
@@ -38,10 +40,12 @@ export const normalizePath = (path: string) => {
 // utils/response.ts
 
 export function responseSuccess<T>(data: T, status = 200) {
+  logger.info({ data }, "Response Success Payload: ");
   return NextResponse.json(data, { status });
 }
 
 export function responseError(error: unknown) {
+  logger.error({ error }, "Response Error Payload: ");
   if (error instanceof ApiError) {
     return NextResponse.json(
       {
@@ -93,9 +97,3 @@ export const handleErrorApi = ({
   }
 };
 
-export const getAccessTokenFromLocalStorage = () => {
-  return localStorage.getItem("accessToken");
-};
-export const getRefreshTokenFromLocalStorage = () => {
-  return localStorage.getItem("refreshToken");
-};

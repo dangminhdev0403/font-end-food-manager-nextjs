@@ -1,11 +1,11 @@
 import { auth } from "@/config/authentication/auth";
-import { NextRequest, NextResponse } from "next/server";
+import { privatePaths } from "@/lib/utils";
+import { NextResponse } from "next/server";
 
-export const privatePaths = ["/manage", "/profile", "/admin"];
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
- 
+
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||

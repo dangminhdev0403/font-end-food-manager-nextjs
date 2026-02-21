@@ -23,15 +23,15 @@ type UserProps = {
 export default function DropdownAvatar({ user }: UserProps) {
   const router = useRouter();
   const handleLogout = async () => {
-    await authClient.clientLogout();
-    await signOut({ redirect: false });
-
-    router.push("/login");
+    try {
+      await authClient.clientLogout();
+    } catch (error) {
+    } finally {
+      await signOut({ redirect: false });
+      router.push("/login");
+    }
   };
-  // 1️⃣ Đang load → không render gì
-  if (status === "loading") {
-    return null; // hoặc skeleton
-  }
+
   const profile = user;
 
   return (

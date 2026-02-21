@@ -1,6 +1,6 @@
 "use client";
 
-import { getAccessTokenFromLocalStorage } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -31,8 +31,10 @@ const menuItems = [
 
 export default function NavItems({ className }: { className?: string }) {
   const [isAuth, setIsAuth] = useState<boolean>(false);
+  const { data } = useSession();
+
   useEffect(() => {
-    setIsAuth(Boolean(getAccessTokenFromLocalStorage()));
+    setIsAuth(Boolean(data?.user));
   }, [isAuth]);
 
   return menuItems.map((item) => {

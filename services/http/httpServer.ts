@@ -1,6 +1,8 @@
 import { auth } from "@/config/authentication/auth";
 import envConfig from "@/config/env.config";
-import axios, { AxiosRequestConfig } from "axios";
+import { logger } from "@/lib/logger";
+import { privatePaths } from "@/lib/utils";
+import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { ApiError, ApiResponse } from "./apiError";
 export interface ServerRequestConfig extends AxiosRequestConfig {
   isAuth?: boolean;
@@ -24,28 +26,49 @@ export async function request<T>(
     if (isAuth) {
       const session = await auth();
       if (!session?.accessToken) {
-        throw new Error("Unauthorized");
+        throw new ApiError({
+          status: 401,
+          message: "Unauthorized: No access token found",
+          error: "Unauthorized",
+        });
       }
+      logger.info(
+        { accessToken: session.accessToken },
+        "Attaching access token to request headers",
+      );
+      const isPrivate = privatePaths.some((p) => url.startsWith(p));
 
-      headers = {
-        ...headers,
-        Authorization: `Bearer ${session.accessToken}`,
-      };
+      if (isPrivate) {
+        headers = {
+          ...headers,
+          Authorization: `Bearer ${session.accessToken}`,
+        };
+      }
     }
     const res = await http.request<ApiResponse<T>>({
       url,
       method,
       data,
-      ...options,
+      ...axiosOptions,
+      headers,
     });
-    console.log("Call API Success:", res.status);
-
+    logger.info({ dataAPI: res.data }, "Call API Success, Response Status: ");
     return res.data;
-  } catch (error: any) {
+  } catch (error: AxiosError | any) {
+    const originalRequest: any = error.config;
     const payload = error.response?.data;
-    console.log("Http Server Error", payload);
-    const status = payload?.status ?? error.response?.status ?? 500;
 
+    const status =
+      payload?.status ?? payload?.statusCode ?? error.response?.status ?? 500;
+    logger.info(
+      {
+        status,
+        url: originalRequest?.url,
+        method: originalRequest?.method,
+        payload,
+      },
+      "Http Server Error Response Payload: ",
+    );
     throw new ApiError({
       status,
       message: payload?.message ?? error.message,

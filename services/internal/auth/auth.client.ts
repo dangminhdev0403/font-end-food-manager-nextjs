@@ -8,7 +8,6 @@ import {
 } from "@/services/internal/auth/auth.types";
 
 const authClient = {
-  refreshTokenRequest: null as Promise<ApiResponse<RefreshTokenRes>> | null,
 
   clientLogin: (body: LoginBodyType) =>
     httpClient.post<LoginRes>("api/auth/login", body),
@@ -18,19 +17,7 @@ const authClient = {
   clientRefreshToken: () =>
     httpClient.post<RefreshTokenRes>("/api/auth/refresh"),
 
-  async refreshToken() {
-    if (this.refreshTokenRequest) {
-      return this.refreshTokenRequest;
-    }
-
-    this.refreshTokenRequest =
-      httpClient.post<RefreshTokenRes>("/api/auth/refresh");
-
-    const result = await this.refreshTokenRequest;
-    this.refreshTokenRequest = null;
-
-    return result;
-  },
+ 
 };
 
 export default authClient;

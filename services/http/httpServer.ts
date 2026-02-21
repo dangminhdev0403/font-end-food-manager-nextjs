@@ -44,9 +44,10 @@ export async function request<T>(
   } catch (error: any) {
     const payload = error.response?.data;
     console.log("Http Server Error", payload);
+    const status = payload?.status ?? error.response?.status ?? 500;
 
     throw new ApiError({
-      status: payload?.status ?? error.response?.status ?? 500,
+      status,
       message: payload?.message ?? error.message,
       error: payload?.error,
       data: payload?.data,

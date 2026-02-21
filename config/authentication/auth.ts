@@ -3,9 +3,7 @@ import authServer from "@/services/internal/auth/auth.server";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
-type Decoded = {
-  exp: number;
-};
+
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
@@ -25,7 +23,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const email = String(credentials.email);
           const password = String(credentials.password);
           const res = await authServer.serverLogin({ email, password });
-
+        
           return res.data;
         } catch (error: any) {
           const message = error?.message || "Lỗi Auth";

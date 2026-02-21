@@ -12,8 +12,8 @@ import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
-
 import { authenticate } from "@/config/authentication/actions";
+
 import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -51,7 +51,7 @@ export default function LoginForm() {
       router.refresh();
       router.push("/manage/dashboard");
     }
-    setLoading(false);
+    setLoading(true);
   };
 
   return (

@@ -2,13 +2,19 @@ import DropdownAvatar from "@/app/manage/dropdown-avatar";
 import MobileNavLinks from "@/app/manage/mobile-nav-links";
 import NavLinks from "@/app/manage/nav-links";
 import DarkModeToggle from "@/components/dark-mode-toggle";
+import { auth } from "@/config/authentication/auth";
+import type { Session } from "next-auth";
+
 import type React from "react";
 
-export default function Layout({
+export default async function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
+  if (!session?.user) return null;
   return (
     <div
       className="flex min-h-screen w-full flex-col bg-linear-to-r
@@ -26,7 +32,7 @@ export default function Layout({
           {/* Spacer */}
           <div className="ml-auto flex items-center gap-4 ">
             <DarkModeToggle />
-            <DropdownAvatar />
+            <DropdownAvatar user={session.user} />
           </div>
         </header>
 

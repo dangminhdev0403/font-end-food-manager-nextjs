@@ -1,7 +1,7 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 
 import {
   DropdownMenu,
@@ -12,14 +12,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import authClient from "@/services/internal/auth/auth.client";
+import type { Session } from "next-auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-export default function DropdownAvatar() {
+type UserProps = {
+  user: Session["user"];
+};
+
+export default function DropdownAvatar({ user }: UserProps) {
   const router = useRouter();
-
-  const { data: session, status } = useSession();
-
   const handleLogout = async () => {
     await authClient.clientLogout();
     await signOut({ redirect: false });
@@ -30,7 +32,7 @@ export default function DropdownAvatar() {
   if (status === "loading") {
     return null; // hoặc skeleton
   }
-  const profile = session?.user;
+  const profile = user;
 
   return (
     <DropdownMenu>

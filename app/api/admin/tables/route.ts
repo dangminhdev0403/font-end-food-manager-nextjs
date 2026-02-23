@@ -8,14 +8,15 @@ export async function GET(req: NextRequest) {
 
     const page = Number.parseInt(searchParams.get("page") || "1");
     const size = Number.parseInt(searchParams.get("size") || "10");
-
+    const statusFilter = searchParams.get("statusFilter") || ("ALL" as any);
+    const search = searchParams.get("search") || "";
     const res = await adminTableServer.getListTable({
       page,
       size,
+      search,
+      statusFilter,
     });
-    console.log("typeof res:", typeof res);
-    console.log("res:", res);
-    console.log("stringify:", JSON.stringify(res));
+
     return responseSuccess(res);
   } catch (error: any) {
     return responseError(error);

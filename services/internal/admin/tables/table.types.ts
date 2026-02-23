@@ -1,4 +1,4 @@
-import { Pageable } from "@/constants/types/page.type";
+import { Pageable, PaginationQuery } from "@/constants/types/page.type";
 
 export type TableStatus = "EMPTY" | "OCCUPIED" | "RESERVED";
 
@@ -26,3 +26,10 @@ export interface TableAddBody {
   name: string;
   capacity: number;
 }
+
+export interface FilterTableQuery {
+  search: string;
+  statusFilter: TableStatus | "ALL";
+}
+export type TableStatusCount = Record<TableStatus | "ALL", number>;
+export type GetListTableParams = PaginationQuery & FilterTableQuery;

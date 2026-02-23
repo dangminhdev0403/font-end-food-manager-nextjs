@@ -1,13 +1,22 @@
 import envConfig from "@/config/env.config";
-import { Pageable, PaginationQuery } from "@/constants/types/page.type";
+import { PaginationQuery } from "@/constants/types/page.type";
 import { httpClient } from "@/services/http/httpClient";
-import { ListTableResponse, TableAddBody } from "@/services/internal/admin/tables/table.types";
+import {
+  FilterTableQuery,
+  GetListTableParams,
+  ListTableResponse,
+  TableAddBody,
+  TableStatus,
+  TableStatusCount,
+} from "@/services/internal/admin/tables/table.types";
 
 const adminTableClient = {
-  getListTable: (params?: PaginationQuery) =>
+  getListTable: (params?: GetListTableParams) =>
     httpClient.get<ListTableResponse>("/api/admin/tables", {
       params,
     }),
+  getTableCounts: () =>
+    httpClient.get<TableStatusCount>("/api/admin/tables/status-count"),
   addTable: async (data: TableAddBody) =>
     httpClient.post<ListTableResponse>("/admin/tables", data, {
       baseURL: envConfig.NEXT_PUBLIC_BACKEND_API_ENDPOINT,

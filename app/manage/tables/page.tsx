@@ -1,4 +1,6 @@
 "use client";
+import CountUp from "react-countup";
+import { useDebounceValue } from "usehooks-ts";
 
 import QRCodeModal from "@/components/qr-code-modal";
 import TableCard from "@/components/table-card";
@@ -16,30 +18,44 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import {
   useAdminAddTableMutation,
+  useAdminGetTableCountsQuery,
   useAdminTableQuery,
 } from "@/queries/admin/useTables";
-import { TableItem, TableStatus } from "@/services/internal/admin/tables/table.types";
+import {
+  TableItem,
+  TableStatus,
+} from "@/services/internal/admin/tables/table.types";
 
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
-  const { data, isLoading } = useAdminTableQuery({
-    page: 1,
-    size: 5,
+  const [currentPage, setCurrentPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<TableStatus | "ALL">("ALL");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch] = useDebounceValue(searchTerm, 400);
+  const { data, isLoading, isFetching } = useAdminTableQuery({
+    page: currentPage,
+    size: 12,
+    statusFilter: statusFilter,
+    search: debouncedSearch.trim(),
   });
+  const { data: countsData } = useAdminGetTableCountsQuery();
   const addTableMutation = useAdminAddTableMutation();
 
   const listTable = data?.items || [];
   const pageable = data?.meta;
-  const [currentPage, setCurrentPage] = useState(1);
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedTable, setSelectedTable] = useState<TableItem | null>(null);
   const [qrTableId, setQrTableId] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | TableStatus>("all");
-
+  const tableSectionRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    tableSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, [currentPage]);
   const handleAddTable = async (
     newTable: Omit<TableItem, "id" | "orderedDishes">,
   ) => {
@@ -57,29 +73,16 @@ export default function Home() {
 
   const handleDeleteTable = (id: number) => {};
 
-  const filteredTables = useMemo(
-    () =>
-      listTable.filter((table) => {
-        const matchesSearch = table.name
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-        const matchesStatus =
-          statusFilter === "all" || table.status === statusFilter;
-        return matchesSearch && matchesStatus;
-      }),
-    [listTable, searchTerm, statusFilter],
-  );
-
-  const totalPages = pageable?.totalPages || 0;
-
   const handleSearch = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
   };
+  const totalPages = pageable?.totalPages || 0;
 
-  const emptyCount = listTable.filter((t) => t.status === "EMPTY").length;
-  const occupiedCount = listTable.filter((t) => t.status === "OCCUPIED").length;
-  const reservedCount = listTable.filter((t) => t.status === "RESERVED").length;
+  const allCount = countsData?.data.ALL || 0;
+  const emptyCount = countsData?.data.EMPTY || 0;
+  const occupiedCount = countsData?.data.OCCUPIED || 0;
+  const reservedCount = countsData?.data.RESERVED || 0;
   if (isLoading) {
     return <Spinner />;
   }
@@ -109,7 +112,7 @@ export default function Home() {
               Tổng Bàn
             </div>
             <div className="text-3xl sm:text-4xl font-bold text-primary mt-3">
-              {listTable.length}
+              <CountUp end={allCount} duration={1.2} />
             </div>
           </Card>
           <Card className="p-5 sm:p-6 bg-card border-2 border-border hover:shadow-md transition-shadow">
@@ -117,7 +120,7 @@ export default function Home() {
               Trống
             </div>
             <div className="text-3xl sm:text-4xl font-bold text-green-600 dark:text-green-400 mt-3">
-              {emptyCount}
+              <CountUp end={emptyCount} duration={1.2} />
             </div>
           </Card>
           <Card className="p-5 sm:p-6 bg-card border-2 border-border hover:shadow-md transition-shadow">
@@ -125,7 +128,7 @@ export default function Home() {
               Đang Dùng
             </div>
             <div className="text-3xl sm:text-4xl font-bold text-orange-600 dark:text-orange-400 mt-3">
-              {occupiedCount}
+              <CountUp end={occupiedCount} duration={1.2} />
             </div>
           </Card>
           <Card className="p-5 sm:p-6 bg-card border-2 border-border hover:shadow-md transition-shadow">
@@ -133,13 +136,16 @@ export default function Home() {
               Đặt Trước
             </div>
             <div className="text-3xl sm:text-4xl font-bold text-blue-600 dark:text-blue-400 mt-3">
-              {reservedCount}
+              <CountUp end={reservedCount} duration={1.2} />
             </div>
           </Card>
         </div>
 
         {/* Search and Add Button */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-8">
+        <div
+          className="flex flex-col sm:flex-row gap-3 mb-8"
+          ref={tableSectionRef}
+        >
           <Input
             placeholder="Tìm kiếm bàn theo tên..."
             value={searchTerm}
@@ -168,15 +174,20 @@ export default function Home() {
         {/* Filter Buttons */}
         <div className="flex flex-wrap gap-2 mb-8">
           <Button
-            variant={statusFilter === "all" ? "default" : "outline"}
+            variant={statusFilter === "ALL" ? "default" : "outline"}
             size="sm"
             onClick={() => {
-              setStatusFilter("all");
+              setStatusFilter("ALL");
               setCurrentPage(1);
             }}
             className="font-medium"
           >
-            Tất Cả ({listTable.length})
+            <CountUp
+              end={allCount}
+              duration={1.2}
+              prefix="Tất Cả ("
+              suffix=")"
+            />
           </Button>
           <Button
             variant={statusFilter === "EMPTY" ? "default" : "outline"}
@@ -187,7 +198,12 @@ export default function Home() {
             }}
             className="font-medium"
           >
-            Trống ({emptyCount})
+            <CountUp
+              end={emptyCount}
+              duration={1.2}
+              prefix="Trống ("
+              suffix=")"
+            />
           </Button>
           <Button
             variant={statusFilter === "OCCUPIED" ? "default" : "outline"}
@@ -198,7 +214,12 @@ export default function Home() {
             }}
             className="font-medium"
           >
-            Đang Dùng ({occupiedCount})
+            <CountUp
+              end={occupiedCount}
+              duration={1.2}
+              prefix="Đang Dùng ("
+              suffix=")"
+            />
           </Button>
           <Button
             variant={statusFilter === "RESERVED" ? "default" : "outline"}
@@ -209,16 +230,19 @@ export default function Home() {
             }}
             className="font-medium"
           >
-            Đặt Trước ({reservedCount})
+            <CountUp
+              end={reservedCount}
+              duration={1.2}
+              prefix="Đặt Trước ("
+              suffix=")"
+            />
           </Button>
         </div>
 
         {/* Tables Grid with Pagination */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-foreground">
-              Danh Sách Bàn ({filteredTables.length})
-            </h2>
+            <h2 className="text-lg font-bold text-foreground">Danh Sách Bàn</h2>
             {totalPages > 1 && (
               <p className="text-sm text-muted-foreground">
                 Trang {currentPage} / {totalPages}
@@ -247,7 +271,7 @@ export default function Home() {
                     variant="outline"
                     size="sm"
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
+                    disabled={currentPage === 1 || isFetching}
                     className="gap-2"
                   >
                     <ChevronLeft className="h-4 w-4" />
@@ -276,7 +300,7 @@ export default function Home() {
                     onClick={() =>
                       setCurrentPage((p) => Math.min(totalPages, p + 1))
                     }
-                    disabled={currentPage === totalPages}
+                    disabled={currentPage === totalPages || isFetching}
                     className="gap-2"
                   >
                     Tiếp

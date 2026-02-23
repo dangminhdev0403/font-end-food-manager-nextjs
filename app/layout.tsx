@@ -31,7 +31,7 @@ export default async function RootLayout({
           fontSans.variable,
         )}
       >
-        <SessionProvider>
+        <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
           <AppProvider>
             <ThemeProvider
               attribute="class"

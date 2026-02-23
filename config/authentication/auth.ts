@@ -1,3 +1,4 @@
+import envConfig from "@/config/env.config";
 import { logger } from "@/lib/logger";
 import { ApiError } from "@/services/http/apiError";
 import authServer from "@/services/internal/auth/auth.server";
@@ -8,6 +9,7 @@ import Credentials from "next-auth/providers/credentials";
 export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
   session: {
     strategy: "jwt",
+    maxAge: Number.parseInt(envConfig.NEXT_PUBLIC_REFRESH_EXPRISES_IN_SECONDS),
   },
   providers: [
     Credentials({
@@ -63,8 +65,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
       const expRefresh = refreshExp * 1000;
       if (expRefresh && now > expRefresh) {
         logger.warn("Refresh token expired → force logout");
-
-        return {}; // trả token rỗng = invalidate session
+        return null; // trả token rỗng = invalidate session
       }
 
       if (trigger === "update" && session) {

@@ -1,13 +1,15 @@
-import { PaginationQuery } from "@/constants/types/page.type";
+import { GetListTableParams } from "@/services/internal/admin/tables/table.types";
 
 export const queryKeys = {
   adminTables: Object.assign(
-    (params?: PaginationQuery) =>
+    (params?: GetListTableParams) =>
       [
         "admin-tables",
         {
           page: params?.page ?? 1,
           size: params?.size ?? 10,
+          search: params?.search ?? "",
+          statusFilter: params?.statusFilter ?? "ALL",
         },
       ] as const,
     {
@@ -16,4 +18,5 @@ export const queryKeys = {
   ),
 
   profile: ["account-profile"] as const,
+  adminTableCounts: ["admin-table-counts"] as const,
 };

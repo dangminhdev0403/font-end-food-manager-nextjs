@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { TableItem } from "@/services/internal/admin/tables/table.client";
+import { TableItem } from "@/services/internal/admin/tables/table.types";
 import { ChefHat, Edit2, QrCode, Trash2, Users } from "lucide-react";
 import { useState } from "react";
 

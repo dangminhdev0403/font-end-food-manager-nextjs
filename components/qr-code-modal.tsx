@@ -41,9 +41,9 @@ export default function QRCodeModal({
     link.click();
   };
 
-  const handleCopyLink = async () => {
+  const handleCopyLink = async (qrString: string) => {
     if (!qrValue) return;
-    await navigator.clipboard.writeText(qrValue);
+    await navigator.clipboard.writeText(qrString);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -63,7 +63,7 @@ export default function QRCodeModal({
             ref={qrRef}
             className="bg-white p-6 rounded-2xl shadow-md border"
           >
-            <QRCodeCanvas value={qrValue} size={220} level="Q"  />
+            <QRCodeCanvas value={qrValue} size={220} level="Q" />
           </div>
 
           {/* Link Display */}
@@ -84,7 +84,7 @@ export default function QRCodeModal({
             </Button>
 
             <Button
-              onClick={handleCopyLink}
+              onClick={() => handleCopyLink(qrValue)}
               variant="outline"
               disabled={copied}
               className="flex-1 gap-2"

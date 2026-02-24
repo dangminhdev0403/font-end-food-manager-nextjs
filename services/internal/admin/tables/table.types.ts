@@ -18,11 +18,24 @@ export interface TableItem {
 
   orderedDishes: OrderedDishDTO[];
 }
+export interface TableItemResponse extends Omit<
+  TableItem,
+  "qrToken" | "orderedDishes"
+> {
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 export interface ListTableResponse {
   items: TableItem[];
   meta: Pageable;
 }
 export interface TableAddBody {
+  name: string;
+  capacity: number;
+}
+export interface TableUpdateBody {
+  id: number;
   name: string;
   capacity: number;
 }

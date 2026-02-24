@@ -22,3 +22,34 @@ export async function GET(req: NextRequest) {
     return responseError(error);
   }
 }
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { name, capacity } = body;
+    const res = await adminTableServer.addTable({ name, capacity });
+    return responseSuccess(res);
+  } catch (error: any) {
+    return responseError(error);
+  }
+}
+export async function PUT(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, name, capacity ,status} = body;
+    const res = await adminTableServer.updateTable({ id, name, capacity  ,status});
+    return responseSuccess(res);
+  } catch (error: any) {
+    return responseError(error);
+  }
+}
+export async function DELETE(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id } = body;
+    const res = await adminTableServer.deleteTable({ id });
+    return responseSuccess(res);
+  } catch (error: any) {
+    return responseError(error);
+  }
+}

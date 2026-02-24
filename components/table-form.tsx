@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,12 +10,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TableItem } from "@/services/internal/admin/tables/table.client";
-import { useState } from "react";
+import { logger } from "@/lib/logger";
+
+import {
+  TableFormValues,
+  TableItemForm,
+  tableSchema,
+} from "@/schemaValidations/table.schema";
+import { TableItem } from "@/services/internal/admin/tables/table.types";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
 
 interface TableFormProps {
   initialData?: TableItem & { id: number };
-  onSubmit: (data: TableItem) => void;
+  onSubmit: (data: TableItemForm) => void;
   onClose: () => void;
 }
 
@@ -26,87 +33,90 @@ export default function TableForm({
   onSubmit,
   onClose,
 }: TableFormProps) {
-  const [formData, setFormData] = useState<TableItem>(
-    initialData || {
-      id: 1,
-      name: "MINH",
-      capacity: 4,
-      orderedDishes: [],
-      qrToken: "test",
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<TableFormValues>({
+    resolver: zodResolver(tableSchema),
+    defaultValues: initialData ?? {
+      name: "",
+      capacity: 1,
       status: "EMPTY",
     },
-  );
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.name.trim()) {
-      onSubmit(formData);
-      onClose();
-    }
+  const onTableSubmit = (data: TableFormValues) => {
+    logger.info({ initialData }, "Submitting table form with data:");
+
+    onSubmit({ ...data, id: initialData?.id ?? Date.now() }); // Nếu có initialData thì dùng id đó, nếu không thì tạo id mới bằng timestamp
+    onClose();
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onTableSubmit)} className="space-y-4">
+      {/* Name */}
       <div className="space-y-2">
-        <Label htmlFor="name">Tên Bàn</Label>
-        <Input
-          id="name"
-          placeholder="e.g., Bàn 1, VIP 1"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          required
-        />
+        <Label>Tên Bàn</Label>
+        <Input {...register("name")} />
+        {errors.name && (
+          <p className="text-sm text-red-500">{errors.name.message}</p>
+        )}
       </div>
 
+      {/* Capacity */}
       <div className="space-y-2">
-        <Label htmlFor="capacity">Sức Chứa (người)</Label>
+        <Label>Sức Chứa (người)</Label>
         <Input
-          id="capacity"
           type="number"
-          min="1"
-          max="20"
-          value={formData.capacity}
-          onChange={(e) =>
-            setFormData({ ...formData, capacity: parseInt(e.target.value) })
-          }
-          required
+          min={1}
+          max={20}
+          {...register("capacity", { valueAsNumber: true })}
         />
+        {errors.capacity && (
+          <p className="text-sm text-red-500">{errors.capacity.message}</p>
+        )}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="status">Trạng Thái</Label>
-        <Select
-          value={formData.status}
-          onValueChange={(value) =>
-            setFormData({
-              ...formData,
-              status: value as "EMPTY" | "OCCUPIED" | "RESERVED",
-            })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="available">Trống</SelectItem>
-            <SelectItem value="occupied">Đang Dùng</SelectItem>
-            <SelectItem value="reserved">Đặt Trước</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Status (chỉ edit mới hiện) */}
+      {initialData && (
+        <div className="space-y-2">
+          <Label>Trạng Thái</Label>
+
+          <Controller
+            control={control}
+            name="status"
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="EMPTY">Trống</SelectItem>
+                  <SelectItem value="OCCUPIED">Đang Dùng</SelectItem>
+                  <SelectItem value="RESERVED">Đặt Trước</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
+
+          {errors.status && (
+            <p className="text-sm text-red-500">{errors.status.message}</p>
+          )}
+        </div>
+      )}
 
       <div className="flex gap-2 pt-4">
-        <Button
-          type="submit"
-          className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
-        >
+        <Button type="submit" className="flex-1">
           {initialData ? "Cập Nhật" : "Thêm Bàn"}
         </Button>
+
         <Button
           type="button"
           variant="outline"
           onClick={onClose}
-          className="flex-1 bg-transparent"
+          className="flex-1"
         >
           Hủy
         </Button>

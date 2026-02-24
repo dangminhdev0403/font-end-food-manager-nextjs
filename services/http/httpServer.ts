@@ -87,6 +87,6 @@ export const httpServer = {
   put: <T>(url: string, data?: any, options?: ServerRequestConfig) =>
     request<T>("PUT", url, data, options),
 
-  delete: <T>(url: string, options?: ServerRequestConfig) =>
+  delete: <T>(url: string,  options?: ServerRequestConfig) =>
     request<T>("DELETE", url, undefined, options),
 };

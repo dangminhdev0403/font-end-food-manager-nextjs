@@ -1,12 +1,10 @@
-import envConfig from "@/config/env.config";
-import { PaginationQuery } from "@/constants/types/page.type";
 import { httpClient } from "@/services/http/httpClient";
 import {
-  FilterTableQuery,
   GetListTableParams,
   ListTableResponse,
   TableAddBody,
-  TableStatus,
+  TableItem,
+  TableItemResponse,
   TableStatusCount,
 } from "@/services/internal/admin/tables/table.types";
 
@@ -18,13 +16,12 @@ const adminTableClient = {
   getTableCounts: () =>
     httpClient.get<TableStatusCount>("/api/admin/tables/status-count"),
   addTable: async (data: TableAddBody) =>
-    httpClient.post<ListTableResponse>("/admin/tables", data, {
-      baseURL: envConfig.NEXT_PUBLIC_BACKEND_API_ENDPOINT,
-    }),
-  editTable: async (params?: PaginationQuery) =>
-    httpClient.get<ListTableResponse>("/admin/tables", {
-      baseURL: envConfig.NEXT_PUBLIC_BACKEND_API_ENDPOINT,
-      params,
+    httpClient.post<TableItem>("api/admin/tables", data),
+  editTable: async (data: TableItem) =>
+    httpClient.put<TableItemResponse>("api/admin/tables", data),
+  deleteTable: async (id: number) =>
+    httpClient.delete<TableItemResponse>("/api/admin/tables", {
+      data: { id },
     }),
 };
 

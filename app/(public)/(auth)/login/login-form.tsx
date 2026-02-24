@@ -51,7 +51,7 @@ export default function LoginForm() {
       router.refresh();
       router.push("/manage/dashboard");
     }
-    setLoading(true);
+    setLoading(false);
   };
 
   return (

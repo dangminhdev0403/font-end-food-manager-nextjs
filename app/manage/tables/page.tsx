@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import {
   useAdminAddTableMutation,
+  useAdminDeleteTableMutation,
+  useAdminEditTableMutation,
   useAdminGetTableCountsQuery,
   useAdminTableQuery,
 } from "@/queries/admin/useTables";
@@ -26,6 +28,8 @@ import {
   TableStatus,
 } from "@/services/internal/admin/tables/table.types";
 
+import { logger } from "@/lib/logger";
+import { TableItemForm } from "@/schemaValidations/table.schema";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -34,15 +38,18 @@ export default function Home() {
   const [statusFilter, setStatusFilter] = useState<TableStatus | "ALL">("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch] = useDebounceValue(searchTerm, 400);
-  const { data, isLoading, isFetching } = useAdminTableQuery({
+  const { data, isLoading, isFetching, refetch } = useAdminTableQuery({
     page: currentPage,
     size: 12,
     statusFilter: statusFilter,
     search: debouncedSearch.trim(),
   });
-  const { data: countsData } = useAdminGetTableCountsQuery();
-  const addTableMutation = useAdminAddTableMutation();
 
+  const { data: countsData, refetch: refetchCounts } =
+    useAdminGetTableCountsQuery();
+  const addTableMutation = useAdminAddTableMutation();
+  const updateTableMutation = useAdminEditTableMutation();
+  const deleteTableMutation = useAdminDeleteTableMutation();
   const listTable = data?.items || [];
   const pageable = data?.meta;
 
@@ -57,21 +64,38 @@ export default function Home() {
     });
   }, [currentPage]);
   const handleAddTable = async (
-    newTable: Omit<TableItem, "id" | "orderedDishes">,
+    newTable: Omit<TableItemForm, "id" | "orderedDishes">,
   ) => {
     if (addTableMutation.isPending) return;
     try {
       const res = await addTableMutation.mutateAsync(newTable);
-      console.log(res);
+      await refetch();
+      await refetchCounts();
     } catch (error) {}
     setIsAddDialogOpen(false);
   };
 
-  const handleUpdateTable = (updatedTable: TableItem) => {
+  const handleUpdateTable = async (updatedTable: TableItem) => {
+    if (updateTableMutation.isPending) return;
+    try {
+      logger.info({ updatedTable }, "Updating table with data:");
+      const res = await updateTableMutation.mutateAsync(updatedTable);
+      console.log(res);
+      await refetch();
+      await refetchCounts();
+    } catch (error) {}
     setSelectedTable(null);
   };
 
-  const handleDeleteTable = (id: number) => {};
+  const handleDeleteTable = async (id: number) => {
+    if (deleteTableMutation.isPending) return;
+    try {
+      const res = await deleteTableMutation.mutateAsync(id);
+      console.log(res);
+      await refetch();
+      await refetchCounts();
+    } catch (error) {}
+  };
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);

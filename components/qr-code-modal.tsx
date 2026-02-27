@@ -28,7 +28,7 @@ export default function QRCodeModal({
 
   // Tránh hydration mismatch
   useEffect(() => {
-    setQrValue(`${window.location.origin}/table/${tableToken}`);
+    setQrValue(`${globalThis.location.origin}/tables/scan/${tableToken}`);
   }, [tableToken]);
 
   const handleDownload = () => {

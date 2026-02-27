@@ -3,12 +3,18 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
+import { Playfair_Display } from "next/font/google";
+
 import { Inter as FontSans } from "next/font/google";
 
 // @ts-ignore
 import { SessionProvider } from "next-auth/react";
 import "./globals.css";
-
+const playfair = Playfair_Display({
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+});
 const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -27,7 +33,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          "min-h-screen bg-background font-sans antialiased",
+          "min-h-screen bg-background    font-sans antialiased text-[#f5f1e8]",
           fontSans.variable,
         )}
       >

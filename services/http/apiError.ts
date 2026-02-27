@@ -1,4 +1,8 @@
 export interface ApiResponse<T> {
+  // error: string | null;
+
+  // message: string;
+  // status: number;
   data: T;
 }
 

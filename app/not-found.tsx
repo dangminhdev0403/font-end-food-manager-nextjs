@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 
 export default function NotFound() {
@@ -30,10 +29,7 @@ export default function NotFound() {
 
         {/* Animated 404 number */}
         <div className="relative mb-8 inline-block">
-          <div
-            className="text-9xl md:text-9xl font-bold bg-gradient-to-r from-amber-900 via-yellow-700 to-orange-900 dark:from-amber-300 dark:via-yellow-200 dark:to-amber-200 bg-clip-text text-transparent animate-slide-in"
-            style={{ fontFamily: "Georgia, serif" }}
-          >
+          <div className="text-9xl md:text-9xl font-bold bg-gradient-to-r from-amber-900 via-yellow-700 to-orange-900 dark:from-amber-300 dark:via-yellow-200 dark:to-amber-200 bg-clip-text text-transparent animate-slide-in">
             404
           </div>
 
@@ -56,7 +52,7 @@ export default function NotFound() {
         {/* Heading */}
         <h1
           className="text-4xl md:text-5xl font-bold text-amber-900 dark:text-amber-200 mb-4 animate-slide-in"
-          style={{ fontFamily: "Georgia, serif", animationDelay: "0.2s" }}
+          style={{ animationDelay: "0.2s" }}
         >
           Không tìm thấy trang
         </h1>
@@ -72,7 +68,7 @@ export default function NotFound() {
         {/* Description */}
         <p
           className="text-lg text-amber-800 dark:text-amber-100 mb-12 max-w-xl mx-auto animate-slide-in"
-          style={{ animationDelay: "0.4s", fontFamily: "Georgia, serif" }}
+          style={{ animationDelay: "0.4s" }}
         >
           Trang bạn tìm kiếm không tồn tại hoặc đã được di chuyển. Vui lòng quay
           trở lại trang chủ để tiếp tục hành trình của bạn.
@@ -88,12 +84,6 @@ export default function NotFound() {
               🏠 Về Trang Chủ
             </button>
           </Link>
-          <button
-            onClick={() => window.history.back()}
-            className="px-8 py-4 bg-white dark:bg-amber-950 text-amber-900 dark:text-amber-200 font-semibold border-2 border-amber-400 dark:border-amber-300 rounded-md hover:bg-amber-50 dark:hover:bg-amber-900 transition-all duration-300 hover:shadow-lg hover:shadow-amber-300/30 dark:hover:shadow-amber-300/20 active:scale-95"
-          >
-            ← Quay Lại
-          </button>
         </div>
 
         {/* Decorative bottom line */}

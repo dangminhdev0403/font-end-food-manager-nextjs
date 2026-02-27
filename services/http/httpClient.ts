@@ -40,6 +40,7 @@ httpClient.interceptors.request.use((config) => {
 // Response interceptor
 httpClient.interceptors.response.use(
   (res) => {
+    logger.info({ response: res.data }, "Http Client Call API Success: ");
     return res.data;
   },
 

@@ -1,7 +1,7 @@
 export interface ApiResponse<T> {
   // error: string | null;
 
-  // message: string;
+  message: string;
   // status: number;
   data: T;
 }

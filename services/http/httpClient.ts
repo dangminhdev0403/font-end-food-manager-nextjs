@@ -1,10 +1,12 @@
 "use client";
 import envConfig from "@/config/env.config";
+import { LOCAL_STORAGE_KEY } from "@/constants/keys/localStorage.key";
 import { logger } from "@/lib/logger";
 import { RefreshTokenRes } from "@/services/internal/auth/auth.types";
 import axios, { AxiosError, AxiosHeaders, AxiosInstance } from "axios";
 import { signOut } from "next-auth/react";
 import { ApiError } from "./apiError";
+
 // Request interceptor
 let isRefreshing = false;
 let refreshAttempts = 0;
@@ -32,6 +34,19 @@ export const httpClient = axios.create({
 httpClient.interceptors.request.use((config) => {
   if (!config.headers) {
     config.headers = new AxiosHeaders();
+  }
+
+  // Guest session
+  if (config.isGuest) {
+    const tableSession =
+      globalThis.window === undefined
+        ? null
+        : localStorage.getItem(LOCAL_STORAGE_KEY.GUEST_TOKEN);
+
+    if (tableSession) {
+      const cleanSession = tableSession.replaceAll(/^"|"$/g, "");
+      config.headers.set("x-table-session", cleanSession);
+    }
   }
 
   return config;

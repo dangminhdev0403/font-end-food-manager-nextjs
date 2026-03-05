@@ -1,21 +1,13 @@
-import { Pageable } from "@/constants/types/page.type";
+import { PaginationResponse } from "@/constants/types/page.type";
 
 export interface ProductItem {
   id: number;
-
-  price: {
-    base: number;
-    virtual: number;
-  };
-
-  name: string ;
-  description: string ;
-  cookingInstructions: string ;
-
-  images: { url: string }[];
+  basePrice: number;
+  virtualPrice: number;
+  name: string | null;
+  description: string | null;
+  cookingInstructions: string | null;
+  images: string[];
 }
 
-export interface ListProductResponse {
-  items: ProductItem[];
-  meta: Pageable;
-}
+export interface ListProductResponse extends PaginationResponse<ProductItem> {}

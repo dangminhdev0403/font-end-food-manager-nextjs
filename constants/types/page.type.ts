@@ -10,3 +10,8 @@ export interface PaginationQuery {
   size: number;
 }
 
+
+export interface PaginationResponse<T> {
+  items: T[];
+  meta: Pageable;
+}

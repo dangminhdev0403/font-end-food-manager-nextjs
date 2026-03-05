@@ -1,31 +1,21 @@
 import { httpClient } from "@/services/http/httpClient";
 import { backendApiEndpoint } from "@/services/internal/base-url.consants";
-import { ListTableResponse } from "@/services/internal/customers/customer.types";
-import { GuestOrderRequestBody, ListOrderGuestResponse } from "@/services/internal/customers/guests/guest.types";
+import {
+  GuestOrderRequestBody,
+  ListOrderGuestResponse,
+} from "@/services/internal/customers/guests/guest.types";
 
 const guestClient = {
-  updateOrder: ({
-    guestToken,
-    body,
-  }: {
-    guestToken: string;
-    body: GuestOrderRequestBody;
-  }) =>
-    httpClient.post<ListOrderGuestResponse>(`guest/orders/choose-items`, {
+  updateOrder: (body: GuestOrderRequestBody) =>
+    httpClient.post<ListOrderGuestResponse>(`guest/orders/choose-items`, body, {
       baseURL: backendApiEndpoint,
-      data: body,
-      headers: {
-        "x-table-session": guestToken,
-        "Content-Type": "application/json",
-      },
+      isGuest: true,
     }),
-  getListOrder: (guestToken: string) =>
+
+  getListOrder: () =>
     httpClient.get<ListOrderGuestResponse>(`guest/orders`, {
       baseURL: backendApiEndpoint,
-      headers: {
-        "x-table-session": guestToken,
-        "Content-Type": "application/json",
-      },
+      isGuest: true,
     }),
 };
 

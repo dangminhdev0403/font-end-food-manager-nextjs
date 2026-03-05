@@ -97,3 +97,10 @@ export const handleErrorApi = ({
   }
 };
 
+export function removeVietnameseTones(str: string) {
+  return str
+    .normalize("NFD") // tách ký tự và dấu
+    .replaceAll(/[\u0300-\u036f]/g, "") // xoá dấu
+    .replaceAll(/đ/g, "d")
+    .replaceAll(/Đ/g, "D");
+}

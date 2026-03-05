@@ -1,4 +1,4 @@
-import { queryKeys } from "@/lib/queryKeys";
+import { queryKeys } from "@/constants/keys/queryKeys";
 import { profileClientApi } from "@/services/internal/me/profile.client";
 import { useMutation, useQuery } from "@tanstack/react-query";
 

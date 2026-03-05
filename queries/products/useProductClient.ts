@@ -1,5 +1,5 @@
+import { queryKeys } from "@/constants/keys/queryKeys";
 import { PaginationQuery } from "@/constants/types/page.type";
-import { queryKeys } from "@/lib/queryKeys";
 import productClient from "@/services/internal/products/product.client";
 import { useQuery } from "@tanstack/react-query";
 

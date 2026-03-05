@@ -1,7 +1,7 @@
 import { auth } from "@/config/authentication/auth";
 import envConfig from "@/config/env.config";
 import { logger } from "@/lib/logger";
-import { privatePaths } from "@/lib/utils";
+import { privatePaths, removeVietnameseTones } from "@/lib/utils";
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { ApiError, ApiResponse } from "./apiError";
 export interface ServerRequestConfig extends AxiosRequestConfig {
@@ -52,7 +52,14 @@ export async function request<T>(
       ...axiosOptions,
       headers,
     });
-    logger.info({ dataAPI: res.data }, "Call API Success, Response Status: ");
+    const safeData = {
+      ...res.data,
+      message: removeVietnameseTones(res.data?.message),
+    };
+    logger.info(
+      { dataAPI: safeData },
+      "Call API Success, Response Status: ",
+    );
     return res.data;
   } catch (error: AxiosError | any) {
     const originalRequest: any = error.config;
@@ -69,9 +76,10 @@ export async function request<T>(
       },
       "Http Server Error Response Payload: ",
     );
+    ;
     throw new ApiError({
       status,
-      message: payload?.message ?? error.message,
+      message: removeVietnameseTones(payload?.message ?? error.message),
       error: payload?.error,
       data: payload?.data,
     });

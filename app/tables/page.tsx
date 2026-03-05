@@ -123,12 +123,12 @@ export default function TableSelectionPage() {
                     >
                       <Utensils
                         className={`w-8 h-8 ${
-                          isOccupied ? "text-[#ff4d4d]" : "text-[#f08a00]"
+                          isOccupied ? "text-[#ff4d4d]" : "text-[#965c0cd0]"
                         }`}
                       />
                     </div>
 
-                    <h3 className="text-2xl  tracking-wide">
+                    <h3 className="text-2xl font-semibold text-[#ff9e17e7] tracking-wide">
                       Bàn {table.name}
                     </h3>
 

@@ -1,4 +1,3 @@
-import { auth } from "@/config/authentication/auth";
 import type React from "react";
 
 export default async function Layout({
@@ -6,7 +5,6 @@ export default async function Layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <div>
       {/* Main content area */}

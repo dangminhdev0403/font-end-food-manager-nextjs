@@ -1,4 +1,4 @@
-import { queryKeys } from "@/lib/queryKeys";
+import { queryKeys } from "@/constants/keys/queryKeys";
 import adminTableClient from "@/services/internal/admin/tables/table.client";
 import {
   GetListTableParams,

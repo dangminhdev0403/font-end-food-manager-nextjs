@@ -114,7 +114,7 @@ export default function Home({ listProduct }: Props) {
                 Không gian
               </a>
               <a
-                href="#contact"
+                href="#table"
                 className="hover:text-foreground transition-colors"
               >
                 Liên hệ
@@ -123,7 +123,7 @@ export default function Home({ listProduct }: Props) {
           </AnimatedSection>
           <AnimatedSection animation="fade-in-right" delay={200}>
             <MagneticButton className="bg-foreground text-background hover:bg-foreground/90">
-              Đặt bàn
+              Đăng nhập
             </MagneticButton>
           </AnimatedSection>
         </div>
@@ -172,7 +172,7 @@ export default function Home({ listProduct }: Props) {
                 size="lg"
                 className="bg-foreground text-background hover:bg-foreground/90 px-8 group"
               >
-                Khám phá thực đơn
+                <Link href={"/menu"}> Khám phá thực đơn</Link>
                 <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </MagneticButton>
               <MagneticButton
@@ -180,7 +180,7 @@ export default function Home({ listProduct }: Props) {
                 variant="outline"
                 className="border-foreground/30 text-foreground bg-transparent hover:bg-foreground/10 px-8"
               >
-                Đặt bàn ngay
+                <a href="#table"> Đặt bàn ngay</a>
               </MagneticButton>
             </div>
           </AnimatedSection>
@@ -258,11 +258,11 @@ export default function Home({ listProduct }: Props) {
       </motion.section>
 
       {/* Menu Section */}
-      <motion.section
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 0.6 }}
+      <section
+        // initial={{ opacity: 0, y: 50 }}
+        // whileInView={{ opacity: 1, y: 0 }}
+        // viewport={{ once: true, amount: 0.3 }}
+        // transition={{ duration: 0.6 }}
         id="menu"
         className="py-32 px-6"
       >
@@ -337,7 +337,7 @@ export default function Home({ listProduct }: Props) {
             </Link>
           </AnimatedSection>
         </div>
-      </motion.section>
+      </section>
 
       {/* Gallery Section */}
       <section id="gallery" className="py-32 bg-secondary/20">
@@ -413,7 +413,7 @@ export default function Home({ listProduct }: Props) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.6 }}
-        id="contact"
+        id="table"
         className="py-32 px-6 bg-linear-to-br from-amber-900 via-orange-900 to-amber-950 text-white "
       >
         <div className="container mx-auto">

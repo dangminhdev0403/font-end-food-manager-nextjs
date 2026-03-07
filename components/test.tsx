@@ -1,4 +1,7 @@
+"use client";
 import { ListProductResponse } from "@/services/internal/products/product.types";
+import { motion } from "motion/react";
+
 interface Props {
   listProduct: ListProductResponse["items"];
 }
@@ -9,9 +12,9 @@ export default function TestComponet({ listProduct }: Props) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {listProduct?.map((item, index) => (
-        <div key={item.id} className="text-black">
+        <motion.div key={item.id} className="text-black">
           {item.name}
-        </div>
+        </motion.div>
       ))}
     </div>
   );

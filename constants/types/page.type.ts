@@ -12,6 +12,6 @@ export interface PaginationQuery {
 
 
 export interface PaginationResponse<T> {
-  items: T[];
+  items: T[] | null;
   meta: Pageable;
 }

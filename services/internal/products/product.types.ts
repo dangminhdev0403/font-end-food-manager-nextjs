@@ -7,7 +7,7 @@ export interface ProductItem {
   name: string | null;
   description: string | null;
   cookingInstructions: string | null;
-  images: string[];
+  images: string[] | null;
 }
 
 export interface ListProductResponse extends PaginationResponse<ProductItem> {}

@@ -105,11 +105,11 @@ async function handleUnauthorized(
   const originalRequest: any = error.config;
 
   if (!originalRequest) {
-    return Promise.reject(error);
+    throw error;
   }
 
   if (originalRequest._retry) {
-    return Promise.reject(error);
+    throw error;
   }
 
   if (isRefreshing) {
@@ -129,7 +129,6 @@ async function handleUnauthorized(
 
     logger.info({ attempt: refreshAttempts }, "Refreshing access token");
 
-    // const res = await authClient.clientRefreshToken();
     const res = await httpClient.post<RefreshTokenRes>("/api/auth/refresh");
 
     logger.info({ res }, "Refresh reverse token success");
@@ -158,7 +157,7 @@ async function handleUnauthorized(
       });
     }
 
-    return Promise.reject(err);
+    throw err;
   } finally {
     isRefreshing = false;
   }

@@ -1,4 +1,5 @@
 "use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,223 +10,214 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
+
+import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { DishStatus, DishStatusValues } from "@/constants/types/auth.type";
-import { getVietnameseDishStatus } from "@/lib/utils";
+import { useToast } from "@/components/ui/use-toast";
+import envConfig from "@/config/env.config";
+import { useCrudForm } from "@/lib/hooks/useCrudForm";
+
+import { useUploadImageMutation } from "@/queries/useUpload";
+import { productResource } from "@/resources/product.resource";
 import {
   CreateDishBody,
   CreateDishBodyType,
 } from "@/schemaValidations/dish.schema";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle, Upload } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+
+import { useMemo, useState } from "react";
 
 export default function AddDish() {
-  const [file, setFile] = useState<File | null>(null);
+  const uploadMutation = useUploadImageMutation();
+  const { toast } = useToast();
+  const createProductMutation = productResource.useCreateMutation();
   const [open, setOpen] = useState(false);
-  const imageInputRef = useRef<HTMLInputElement | null>(null);
-  const form = useForm<CreateDishBodyType>({
-    resolver: zodResolver(CreateDishBody),
-    defaultValues: {
-      name: "",
-      description: "",
-      price: 0,
-      image: "",
-      status: DishStatus.Unavailable,
-    },
-  });
-  const image = form.watch("image");
+  const { form, file, setFile, imageInputRef, previewImage } =
+    useCrudForm<CreateDishBodyType>({
+      schema: CreateDishBody,
+      defaultValues: {
+        name: "",
+        categoryId: Number.parseInt(envConfig.NEXT_PUBLIC_CATEGORY_ID),
+
+        basePrice: 0,
+        virtualPrice: 0,
+        cookingInstructions: "",
+        description: "",
+        image: "",
+      },
+    });
+
   const name = form.watch("name");
-  const previewAvatarFromFile = useMemo(() => {
-    if (file) {
-      return URL.createObjectURL(file);
-    }
+  const image = form.watch("image");
+
+  const previewAvatar = useMemo(() => {
+    if (file) return URL.createObjectURL(file);
     return image;
   }, [file, image]);
 
+  const onSubmit = async (data: CreateDishBodyType) => {
+    try {
+      let imageId: number | undefined;
+
+      if (file) {
+        const uploadRes = await uploadMutation.mutateAsync(file);
+        imageId = uploadRes.data.id;
+      }
+
+      await createProductMutation.mutateAsync({
+        categoryId: data.categoryId,
+        basePrice: data.basePrice,
+        virtualPrice: data.virtualPrice,
+        imagesId: imageId ? [imageId] : [],
+        translations: [
+          {
+            languageId: 1,
+            name: data.name,
+            description: data.description,
+            cookingInstructions: data.cookingInstructions,
+          },
+        ],
+      });
+
+      form.reset();
+      setFile(null);
+      setOpen(false);
+      toast({
+        description: "Tạo mới thành công",
+        variant: "success",
+      });
+    } catch (error) {
+      toast({
+        description: "Có lỗi xảy ra",
+        variant: "error",
+      });
+      console.error(error);
+    }
+  };
+
   return (
-    <Dialog onOpenChange={setOpen} open={open}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="h-9 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg transition-all">
-          <PlusCircle className="h-4 w-4" />
-          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-            Thêm Món Ăn
-          </span>
+        <Button className="gap-2">
+          <PlusCircle className="w-5 h-5" />
+          Thêm Món
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-screen overflow-auto rounded-xl border-border bg-background">
-        <DialogHeader className="border-b border-border pb-4">
-          <DialogTitle className="text-2xl text-foreground">
-            Thêm Món Ăn Mới
-          </DialogTitle>
-          <p className="text-sm text-muted-foreground mt-2">
-            Thêm món ăn mới vào danh sách menu
-          </p>
+
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>Thêm Món Ăn</DialogTitle>
         </DialogHeader>
+
         <Form {...form}>
-          <form
-            noValidate
-            className="grid auto-rows-max items-start gap-4 md:gap-8"
-            id="add-dish-form"
-          >
-            <div className="grid gap-4 py-4">
-              <FormField
-                control={form.control}
-                name="image"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex gap-2 items-start justify-start">
-                      <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
-                        <AvatarImage
-                          src={previewAvatarFromFile || "/placeholder.svg"}
-                        />
-                        <AvatarFallback className="rounded-none">
-                          {name || "Avatar"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        ref={imageInputRef}
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setFile(file);
-                            field.onChange(
-                              "http://localhost:3000/" + file.name,
-                            );
-                          }
-                        }}
-                        className="hidden"
-                      />
-                      <button
-                        className="flex aspect-square w-[100px] items-center justify-center rounded-md border border-dashed"
-                        type="button"
-                        onClick={() => imageInputRef.current?.click()}
-                      >
-                        <Upload className="h-4 w-4 text-muted-foreground" />
-                        <span className="sr-only">Upload</span>
-                      </button>
-                    </div>
-                  </FormItem>
-                )}
-              />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
+            {/* Image */}
+            <FormField
+              control={form.control}
+              name="image"
+              render={() => (
+                <FormItem>
+                  <div className="flex gap-4">
+                    <Avatar className="w-28 h-28">
+                      <AvatarImage src={previewAvatar || "/placeholder.svg"} />
+                      <AvatarFallback>{name || "🍽️"}</AvatarFallback>
+                    </Avatar>
 
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="name">Tên món ăn</Label>
-                      <div className="col-span-3 w-full space-y-2">
-                        <Input id="name" className="w-full" {...field} />
-                        <FormMessage />
-                      </div>
-                    </div>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="price">Giá</Label>
-                      <div className="col-span-3 w-full space-y-2">
-                        <Input
-                          id="price"
-                          className="w-full"
-                          {...field}
-                          type="number"
-                        />
-                        <FormMessage />
-                      </div>
-                    </div>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="description">Mô tả sản phẩm</Label>
-                      <div className="col-span-3 w-full space-y-2">
-                        <Textarea
-                          id="description"
-                          className="w-full"
-                          {...field}
-                        />
-                        <FormMessage />
-                      </div>
-                    </div>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="grid grid-cols-4 items-center justify-items-start gap-4">
-                      <Label htmlFor="description">Trạng thái</Label>
-                      <div className="col-span-3 w-full space-y-2">
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Chọn trạng thái" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {DishStatusValues.map((status) => (
-                              <SelectItem key={status} value={status}>
-                                {getVietnameseDishStatus(status)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      ref={imageInputRef}
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) setFile(file);
+                      }}
+                    />
 
-                      <FormMessage />
-                    </div>
-                  </FormItem>
-                )}
-              />
-            </div>
+                    <button
+                      type="button"
+                      onClick={() => imageInputRef.current?.click()}
+                      className="flex w-28 items-center justify-center border-2 border-dashed rounded-lg"
+                    >
+                      <Upload className="w-6 h-6" />
+                    </button>
+                  </div>
+                </FormItem>
+              )}
+            />
+
+            {/* Name */}
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <Label>Tên món</Label>
+                  <Input {...field} />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Price */}
+            <FormField
+              control={form.control}
+              name="basePrice"
+              render={({ field }) => (
+                <FormItem>
+                  <Label>Giá Gốc</Label>
+                  <Input type="number" {...field} />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Price */}
+            <FormField
+              control={form.control}
+              name="virtualPrice"
+              render={({ field }) => (
+                <FormItem>
+                  <Label>Giá bán ra</Label>
+                  <Input
+                    type="number"
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Description */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <Label>Mô tả</Label>
+                  <Textarea {...field} />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button
+                type="submit"
+                disabled={
+                  uploadMutation.isPending || createProductMutation.isPending
+                }
+                isLoading={
+                  uploadMutation.isPending || createProductMutation.isPending
+                }
+              >
+                Thêm Món
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
-        <DialogFooter className="border-t border-border pt-6 mt-6">
-          <Button
-            type="submit"
-            form="add-dish-form"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 rounded-lg transition-all"
-          >
-            Thêm Món Ăn
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

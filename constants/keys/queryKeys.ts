@@ -1,8 +1,10 @@
 import { PaginationQuery } from "@/constants/types/page.type";
+import { GetListProductParams } from "@/services/internal/admin/products/products-admin.types";
 import { GetListTableParams } from "@/services/internal/admin/tables/table.types";
 
 export const queryKeys = {
   //!admin
+  //? table
   adminTables: Object.assign(
     (params?: GetListTableParams) =>
       [
@@ -21,7 +23,21 @@ export const queryKeys = {
 
   profile: ["account-profile"] as const,
   adminTableCounts: ["admin-table-counts"] as const,
-
+  //? product
+  adminProducts: Object.assign(
+    (params?: GetListProductParams) =>
+      [
+        "admin-product",
+        {
+          page: params?.page ?? 1,
+          size: params?.size ?? 10,
+          search: params?.search ?? "",
+        },
+      ] as const,
+    {
+      root: ["admin-products"] as const,
+    },
+  ),
   //!client
   clientTables: Object.assign(
     (params?: PaginationQuery) =>

@@ -36,7 +36,7 @@ export function ParallaxImage({
   return (
     <div ref={ref} className={`overflow-hidden ${className}`}>
       <Image
-        src={src || "/placeholder.svg"}
+        src={src || "placeholder.svg"}
         alt={alt}
         fill
         className="object-cover"

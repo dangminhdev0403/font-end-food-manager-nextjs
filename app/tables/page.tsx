@@ -1,5 +1,6 @@
 "use client";
 
+import LuxuryLoading from "@/components/loading";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { logger } from "@/lib/logger";
@@ -25,10 +26,10 @@ export default function TableSelectionPage() {
 
   const { data, isLoading } = useClientListTableQuery({
     page: currentPage,
-    size: 12,
+    size: 20,
   });
   const { data: session } = useSession();
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <LuxuryLoading text="Đang lấy danh sách bàn" />;
   const listTable = data?.items || [];
   const pageable = data?.meta || { totalItems: 0, totalPages: 1, pageSize: 20 };
   const { totalItems, totalPages } = pageable;
@@ -43,21 +44,22 @@ export default function TableSelectionPage() {
 
       {/* HEADER */}
       <div className="sticky top-0 z-40 bg-[#140e09]/90 backdrop-blur-md border-b border-[#f08a00]/20">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link
             href="/"
             className="flex items-center gap-2 hover:opacity-70 transition"
           >
             <ArrowLeft className="w-5 h-5 text-[#f08a00]" />
-            <span className="text-xl  font-bold tracking-wide">BIG BOY</span>
+            <span className="text-lg sm:text-xl font-bold tracking-wide">
+              BIG BOY
+            </span>
           </Link>
 
-          <h1 className="text-2xl  tracking-wide">
-            {" "}
-            Lựa Chọn Không Gian Của Quý Khách
+          <h1 className="text-sm sm:text-xl lg:text-2xl text-center font-semibold tracking-wide">
+            Lựa Chọn Bàn
           </h1>
 
-          <div className="w-8" />
+          <div className="w-6 sm:w-8" />
         </div>
       </div>
 
@@ -82,7 +84,7 @@ export default function TableSelectionPage() {
           Hiển thị {listTable.length} / {totalItems} bàn
         </div>
         {/* TABLE GRID */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid  grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 ">
           {listTable.map((table) => {
             const isOccupied = table.status === "OCCUPIED";
             const isDisabled = isOccupied || !isAuthenticated;

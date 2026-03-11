@@ -1,29 +1,17 @@
 "use client";
 
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import {
   ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
+  PaginationState,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
+import { createContext, useContext, useMemo, useState } from "react";
+import { useDebounceValue } from "usehooks-ts";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Table,
   TableBody,
@@ -32,11 +20,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { createContext, useContext, useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+import AddDish from "@/app/manage/dishes/add-dish";
+import EditDish from "@/app/manage/dishes/edit-dish";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -44,42 +43,36 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { formatCurrency, getVietnameseDishStatus } from "@/lib/utils";
-import { useSearchParams } from "next/navigation";
-import AutoPagination from "@/components/auto-pagination";
-import { DishListResType } from "@/schemaValidations/dish.schema";
-import EditDish from "@/app/manage/dishes/edit-dish";
-import AddDish from "@/app/manage/dishes/add-dish";
+import { toast } from "@/components/ui/use-toast";
+import { logger } from "@/lib/logger";
+import { formatCurrency } from "@/lib/utils";
+import { productResource } from "@/resources/product.resource";
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 
-type DishItem = DishListResType["data"][0];
+type DishItem = {
+  id: number;
+  name: string | null;
+  description: string | null;
+  basePrice: number;
+  images: string[] | null;
+};
 
-const DishTableContext = createContext<{
-  setDishIdEdit: (value: number) => void;
-  dishIdEdit: number | undefined;
-  dishDelete: DishItem | null;
-  setDishDelete: (value: DishItem | null) => void;
-}>({
-  setDishIdEdit: (value: number | undefined) => {},
-  dishIdEdit: undefined,
-  dishDelete: null,
-  setDishDelete: (value: DishItem | null) => {},
-});
+const PAGE_SIZE = 10;
 
-export const columns: ColumnDef<DishItem>[] = [
+const DishTableContext = createContext<any>(null);
+
+const columns: ColumnDef<DishItem>[] = [
   {
     accessorKey: "id",
     header: "ID",
   },
   {
-    accessorKey: "image",
     header: "Ảnh",
     cell: ({ row }) => (
-      <div>
-        <Avatar className="aspect-square w-[100px] h-[100px] rounded-md object-cover">
-          <AvatarImage src={row.getValue("image") || "/placeholder.svg"} />
-          <AvatarFallback className="rounded-none">
-            {row.original.name}
-          </AvatarFallback>
+      <div className="flex items-center justify-center w-12 h-12 flex-shrink-0">
+        <Avatar className="w-12 h-12 rounded-md">
+          <AvatarImage src={row.original.images?.[0]} />
+          <AvatarFallback>{row.original.name}</AvatarFallback>
         </Avatar>
       </div>
     ),
@@ -87,36 +80,25 @@ export const columns: ColumnDef<DishItem>[] = [
   {
     accessorKey: "name",
     header: "Tên",
-    cell: ({ row }) => <div className="capitalize">{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "price",
-    header: "Giá cả",
-    cell: ({ row }) => (
-      <div className="capitalize">{formatCurrency(row.getValue("price"))}</div>
-    ),
+    accessorKey: "basePrice",
+    header: "Giá",
+    cell: ({ row }) => formatCurrency(row.original.basePrice),
   },
   {
     accessorKey: "description",
     header: "Mô tả",
     cell: ({ row }) => (
-      <div
-        dangerouslySetInnerHTML={{ __html: row.getValue("description") }}
-        className="whitespace-pre-line"
-      />
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: "Trạng thái",
-    cell: ({ row }) => (
-      <div>{getVietnameseDishStatus(row.getValue("status"))}</div>
+      <p className="max-w-[320px] truncate text-muted-foreground">
+        {row.original.description}
+      </p>
     ),
   },
   {
     id: "actions",
-    enableHiding: false,
-    cell: function Actions({ row }) {
+    header: "Hành động",
+    cell: ({ row }) => {
       const { setDishIdEdit, setDishDelete } = useContext(DishTableContext);
       const openEditDish = () => {
         setDishIdEdit(row.original.id);
@@ -129,13 +111,14 @@ export const columns: ColumnDef<DishItem>[] = [
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <DotsHorizontalIcon className="h-4 w-4" />
+              <DotsHorizontalIcon />
             </Button>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
+
             <DropdownMenuItem onClick={openEditDish}>Sửa</DropdownMenuItem>
             <DropdownMenuItem onClick={openDeleteDish}>Xóa</DropdownMenuItem>
           </DropdownMenuContent>
@@ -148,9 +131,11 @@ export const columns: ColumnDef<DishItem>[] = [
 function AlertDialogDeleteDish({
   dishDelete,
   setDishDelete,
+  deleteMutation,
 }: {
   dishDelete: DishItem | null;
   setDishDelete: (value: DishItem | null) => void;
+  deleteMutation: ReturnType<typeof productResource.useDeleteMutation>;
 }) {
   return (
     <AlertDialog
@@ -161,147 +146,185 @@ function AlertDialogDeleteDish({
         }
       }}
     >
-      <AlertDialogContent className="bg-white">
-        <AlertDialogHeader className="border-b border-slate-200 pb-4">
-          <AlertDialogTitle className="text-2xl text-slate-900">
-            ⚠️ Xóa món ăn?
+      <AlertDialogContent className="max-w-md border border-border bg-background shadow-xl">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2 text-lg font-semibold">
+            ⚠️ Xóa món ăn
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-slate-600 mt-2">
+
+          <AlertDialogDescription className="text-sm text-muted-foreground">
             Món{" "}
-            <span className="bg-red-100 text-red-700 rounded px-2 py-1 font-semibold">
+            <span className="font-semibold text-red-500">
               {dishDelete?.name}
             </span>{" "}
             sẽ bị xóa vĩnh viễn. Hành động này không thể hoàn tác.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="border-t border-slate-200 pt-6">
-          <AlertDialogCancel className="bg-slate-100 hover:bg-slate-200 text-slate-900">
-            Hủy
-          </AlertDialogCancel>
-          <AlertDialogAction className="bg-red-600 hover:bg-red-700 text-white">
-            Xóa
-          </AlertDialogAction>
+
+        <AlertDialogFooter className="gap-2">
+          <AlertDialogCancel className="h-9 bg-red">Hủy</AlertDialogCancel>
+
+          <Button
+            variant="gradient"
+            size="default"
+            className="h-9 px-4 "
+            disabled={deleteMutation.isPending}
+            onClick={async () => {
+              if (!dishDelete) return;
+              try {
+                await deleteMutation.mutateAsync(dishDelete.id);
+                toast({
+                  description: "Xoá thành công",
+                  variant: "success",
+                });
+              } catch (error) {
+                logger.error({ error });
+                toast({
+                  description: "Có lỗi xảy ra",
+                  variant: "error",
+                });
+              }
+
+              setDishDelete(null);
+            }}
+          >
+            {deleteMutation.isPending ? "Đang xóa..." : "Xóa"}
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
 }
-// Số lượng item trên 1 trang
-const PAGE_SIZE = 10;
 export default function DishTable() {
-  const searchParam = useSearchParams();
-  const page = searchParam.get("page") ? Number(searchParam.get("page")) : 1;
-  const pageIndex = page - 1;
+  const [search, setSearch] = useState("");
+  const [debouncedSearch] = useDebounceValue(search, 400);
   const [dishIdEdit, setDishIdEdit] = useState<number | undefined>();
   const [dishDelete, setDishDelete] = useState<DishItem | null>(null);
-  const data: any[] = [];
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
-  const [pagination, setPagination] = useState({
-    pageIndex, // Gía trị mặc định ban đầu, không có ý nghĩa khi data được fetch bất đồng bộ
-    pageSize: PAGE_SIZE, //default page size
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: PAGE_SIZE,
   });
+
+  const { data, isLoading } = productResource.useListQuery({
+    page: pagination.pageIndex + 1,
+    size: pagination.pageSize,
+    search: debouncedSearch.trim(),
+  });
+  const deleteMutation = productResource.useDeleteMutation();
+  const listTable = data?.items ?? [];
+  const meta = data?.meta;
 
   const table = useReactTable({
-    data,
+    data: listTable,
     columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    onPaginationChange: setPagination,
-    autoResetPageIndex: false,
+    pageCount: meta?.totalPages ?? 0,
+
     state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
       pagination,
     },
+
+    manualPagination: true,
+    onPaginationChange: setPagination,
+
+    getCoreRowModel: getCoreRowModel(),
   });
+  const contextValue = useMemo(
+    () => ({
+      dishIdEdit,
+      setDishIdEdit,
+      dishDelete,
+      setDishDelete,
+    }),
+    [dishIdEdit, dishDelete],
+  );
+  const handleSearch = (value: string) => {
+    setSearch(value);
 
-  useEffect(() => {
-    table.setPagination({
-      pageIndex,
-      pageSize: PAGE_SIZE,
-    });
-  }, [table, pageIndex]);
-
+    setPagination((prev) => ({
+      ...prev,
+      pageIndex: 0,
+    }));
+  };
   return (
-    <DishTableContext.Provider
-      value={{ dishIdEdit, setDishIdEdit, dishDelete, setDishDelete }}
-    >
-      <div className="w-full space-y-6">
+    <DishTableContext.Provider value={contextValue}>
+      <div className="w-full space-y-5 mx-auto">
+        {/* Search + Count Header */}
         <EditDish id={dishIdEdit} setId={setDishIdEdit} />
         <AlertDialogDeleteDish
           dishDelete={dishDelete}
           setDishDelete={setDishDelete}
-        />
-
-        {/* Search and Add Bar */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-6 pt-6">
-          <div className="flex-1 max-w-sm">
+          deleteMutation={deleteMutation}
+        />{" "}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex-1 max-w-sm relative ">
             <Input
-              placeholder="Tìm kiếm theo tên món..."
-              value={
-                (table.getColumn("name")?.getFilterValue() as string) ?? ""
-              }
-              onChange={(event) =>
-                table.getColumn("name")?.setFilterValue(event.target.value)
-              }
-              className="h-10 rounded-lg border-border bg-background focus:border-primary focus:ring-primary/20"
+              placeholder="🔎 Tìm món ăn..."
+              value={search}
+              onChange={(e) => handleSearch(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-2">
-            <AddDish />
-          </div>
-        </div>
 
+          <div className="flex items-center gap-3">
+            <div className="h-10 px-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 flex items-center border border-blue-100 dark:border-blue-900/30">
+              <span className="text-sm font-medium text-foreground">
+                Hiện:{" "}
+                <span className="font-semibold text-blue-600 dark:text-blue-400">
+                  {listTable?.length ?? 0} / {meta?.totalItems ?? 0}{" "}
+                </span>{" "}
+                món
+              </span>
+            </div>
+          </div>
+          <AddDish />
+        </div>{" "}
         {/* Table Container */}
-        <div className="overflow-x-auto">
+        <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900/40 dark:to-slate-800/40 sticky top-0 z-10">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
                   key={headerGroup.id}
-                  className="border-b border-border bg-muted/30 hover:bg-muted/40 transition-colors"
+                  className="border-b border-border hover:bg-transparent"
                 >
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead
-                        key={header.id}
-                        className="text-foreground font-semibold text-sm px-6 py-4"
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                      </TableHead>
-                    );
-                  })}
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className="text-xs font-bold uppercase letter-spacing tracking-wide text-slate-600 dark:text-slate-300 py-3 px-4"
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
+                  ))}
                 </TableRow>
               ))}
             </TableHeader>
+
             <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="text-center py-16"
+                  >
+                    <div className="flex justify-center">
+                      <Spinner />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : table.getRowModel().rows.length ? (
+                table.getRowModel().rows.map((row, idx) => (
                   <TableRow
                     key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                    className="border-b border-border/50 hover:bg-muted/40 transition-colors"
+                    className="border-b border-border/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors duration-200"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
                         key={cell.id}
-                        className="text-foreground px-6 py-4"
+                        className="py-3 px-4 text-sm align-middle"
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
@@ -315,13 +338,23 @@ export default function DishTable() {
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="h-40 text-center border-0"
+                    className="text-center py-16 text-muted-foreground"
                   >
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <div className="text-5xl">🍽️</div>
-                      <p className="text-foreground font-semibold mt-2">
-                        Không có kết quả
-                      </p>
+                    <div className="flex flex-col items-center gap-2">
+                      <svg
+                        className="w-12 h-12 text-muted-foreground/30"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                        />
+                      </svg>
+                      <p>Không có dữ liệu</p>
                       <p className="text-sm text-muted-foreground">
                         Thêm một món ăn để bắt đầu
                       </p>
@@ -332,25 +365,61 @@ export default function DishTable() {
             </TableBody>
           </Table>
         </div>
+        {/* Pagination */}
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={pagination.pageIndex === 0}
+            onClick={() =>
+              setPagination((prev) => ({
+                ...prev,
+                pageIndex: prev.pageIndex - 1,
+              }))
+            }
+            className="h-9"
+          >
+            ← Trước
+          </Button>
 
-        {/* Footer with Pagination */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-border/50 px-6 py-4">
-          <div className="text-sm text-muted-foreground">
-            Hiển thị{" "}
-            <span className="font-semibold text-foreground">
-              {table.getPaginationRowModel().rows.length}
-            </span>{" "}
-            trong{" "}
-            <span className="font-semibold text-foreground">{data.length}</span>{" "}
-            kết quả
+          <div className="flex gap-1 items-center px-2">
+            {Array.from({ length: meta?.totalPages ?? 1 }, (_, i) => {
+              const pageNum = i + 1;
+              const isCurrentPage = pagination.pageIndex === i;
+
+              return (
+                <Button
+                  key={i}
+                  variant={isCurrentPage ? "default" : "outline"}
+                  size="sm"
+                  onClick={() =>
+                    setPagination((prev) => ({
+                      ...prev,
+                      pageIndex: i,
+                    }))
+                  }
+                  className="h-9 w-9 p-0"
+                >
+                  {pageNum}
+                </Button>
+              );
+            })}
           </div>
-          <div>
-            <AutoPagination
-              page={table.getState().pagination.pageIndex + 1}
-              pageSize={table.getPageCount()}
-              pathname="/manage/dishes"
-            />
-          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={pagination.pageIndex + 1 >= (meta?.totalPages ?? 1)}
+            onClick={() =>
+              setPagination((prev) => ({
+                ...prev,
+                pageIndex: prev.pageIndex + 1,
+              }))
+            }
+            className="h-9"
+          >
+            Tiếp →
+          </Button>
         </div>
       </div>
     </DishTableContext.Provider>

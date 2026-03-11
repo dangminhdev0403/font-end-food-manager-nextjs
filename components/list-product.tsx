@@ -76,7 +76,6 @@ interface Props {
   listProduct: ListProductResponse["items"];
 }
 export default function Home({ listProduct }: Props) {
-  logger.info({ listProduct }, "Check data");
   if (!listProduct?.length) {
     return <div>Không có sản phẩm</div>;
   }
@@ -123,7 +122,7 @@ export default function Home({ listProduct }: Props) {
           </AnimatedSection>
           <AnimatedSection animation="fade-in-right" delay={200}>
             <MagneticButton className="bg-foreground text-background hover:bg-foreground/90">
-              Đăng nhập
+              <Link href={"/login"}> Đăng nhập</Link>
             </MagneticButton>
           </AnimatedSection>
         </div>

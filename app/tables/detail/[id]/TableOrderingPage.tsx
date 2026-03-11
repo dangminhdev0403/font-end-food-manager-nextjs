@@ -7,7 +7,7 @@ import { toast } from "@/components/ui/use-toast";
 import { LOCAL_STORAGE_KEY } from "@/constants/keys/localStorage.key";
 import { useGuestCart } from "@/lib/hooks/useGuestCart";
 import { useGuestUpdateOrderMutation } from "@/queries/guests/useGuest";
-import { useGetListTableClientQuery } from "@/queries/products/useProductClient";
+import { useGetListProductClientQuery } from "@/queries/products/useProductClient";
 import { Table } from "@/services/internal/customers/customer.types";
 import { ProductItem } from "@/services/internal/products/product.types";
 import { ArrowLeft, Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
@@ -43,7 +43,7 @@ export default function TableOrderingPage({ table }: Props) {
 
   const { mutateAsync: updateOrder, isPending } = useGuestUpdateOrderMutation();
 
-  const { data: listTableResponse, isLoading } = useGetListTableClientQuery({
+  const { data: listTableResponse, isLoading } = useGetListProductClientQuery({
     page: 1,
     size: 18,
   });

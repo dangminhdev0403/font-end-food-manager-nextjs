@@ -1,15 +1,28 @@
 import { DishStatusValues } from "@/constants/types/auth.type";
 import z from "zod";
 
-export const CreateDishBody = z.object({
-  name: z.string().min(1).max(256),
-  price: z.coerce.number().positive(),
-  description: z.string().max(10000),
-  image: z.string().url(),
-  status: z.enum(DishStatusValues).optional(),
-});
+export const CreateDishBody = z
+  .object({
+    name: z.string().min(2),
 
-export type CreateDishBodyType = z.TypeOf<typeof CreateDishBody>;
+    categoryId: z.coerce.number(),
+
+    basePrice: z.coerce.number(),
+
+    virtualPrice: z.coerce.number().optional(),
+
+    cookingInstructions: z.string().optional(),
+
+    description: z.string().optional(),
+
+    image: z.string().optional(),
+  })
+  .transform((data) => ({
+    ...data,
+    virtualPrice: data.virtualPrice ?? data.basePrice,
+  }));
+
+export type CreateDishBodyType = z.infer<typeof CreateDishBody>;
 
 export const DishSchema = z.object({
   id: z.number(),

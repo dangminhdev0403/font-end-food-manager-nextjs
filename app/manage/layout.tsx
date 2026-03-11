@@ -3,7 +3,6 @@ import MobileNavLinks from "@/app/manage/mobile-nav-links";
 import NavLinks from "@/app/manage/nav-links";
 import DarkModeToggle from "@/components/dark-mode-toggle";
 import { auth } from "@/config/authentication/auth";
-import type { Session } from "next-auth";
 
 import type React from "react";
 
@@ -19,7 +18,7 @@ export default async function Layout({
     <div
       className="flex min-h-screen w-full flex-col bg-linear-to-r
     
-    dark:from-slate-950/90 dark:via-slate-900/80 dark:to-slate-950/90
+   
 
     backdrop-blur-md"
     >

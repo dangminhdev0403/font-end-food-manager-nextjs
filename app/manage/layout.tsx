@@ -2,6 +2,7 @@ import DropdownAvatar from "@/app/manage/dropdown-avatar";
 import MobileNavLinks from "@/app/manage/mobile-nav-links";
 import NavLinks from "@/app/manage/nav-links";
 import DarkModeToggle from "@/components/dark-mode-toggle";
+import AdminRealtimeListener from "@/components/listener/admin-realtime-listener";
 import { auth } from "@/config/authentication/auth";
 
 import type React from "react";
@@ -34,8 +35,8 @@ export default async function Layout({
             <DropdownAvatar user={session.user} />
           </div>
         </header>
-
         {/* Page content */}
+        <AdminRealtimeListener />
         <main className="flex-1 ">{children}</main>
       </div>
     </div>

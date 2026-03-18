@@ -1,7 +1,7 @@
 "use client";
 import envConfig from "@/config/env.config";
-import { LOCAL_STORAGE_KEY } from "@/constants/keys/localStorage.key";
 import { logger } from "@/lib/logger";
+import { useSessionStore } from "@/lib/stores/session.store";
 import { RefreshTokenRes } from "@/services/internal/auth/auth.types";
 import axios, { AxiosError, AxiosHeaders, AxiosInstance } from "axios";
 import { signOut } from "next-auth/react";
@@ -38,14 +38,10 @@ httpClient.interceptors.request.use((config) => {
 
   // Guest session
   if (config.isGuest) {
-    const tableSession =
-      globalThis.window === undefined
-        ? null
-        : localStorage.getItem(LOCAL_STORAGE_KEY.GUEST_TOKEN);
+    const { guestToken } = useSessionStore.getState();
 
-    if (tableSession) {
-      const cleanSession = tableSession.replaceAll(/^"|"$/g, "");
-      config.headers.set("x-table-session", cleanSession);
+    if (guestToken) {
+      config.headers.set("x-table-session", guestToken);
     }
   }
 

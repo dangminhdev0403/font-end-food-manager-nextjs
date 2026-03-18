@@ -1,45 +1,114 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useLocalStorage } from "usehooks-ts";
-import { LOCAL_STORAGE_KEY } from "@/constants/keys/localStorage.key";
-import { useGuestGetListOrderQuery } from "@/queries/guests/useGuest";
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
-export interface CartItem {
+export type CartItem = {
   productId: number;
   name: string;
   price: number;
   quantity: number;
   minQuantity: number;
-}
-
-export const useGuestCart = () => {
-  const { data } = useGuestGetListOrderQuery();
-
-  const [cartItems, setCartItems] = useLocalStorage<CartItem[]>(
-    LOCAL_STORAGE_KEY.GUEST_CART,
-    [],
-  );
-
-  const [initialized, setInitialized] = useState(false);
-
-  useEffect(() => {
-    if (!data?.data || initialized) return;
-
-    const items = data.data.items.map((item) => ({
-      productId: item.id,
-      name: item.name,
-      price: item.price,
-      quantity: item.quantity,
-      minQuantity: item.quantity,
-    }));
-
-    setCartItems(items);
-    setInitialized(true);
-  }, [data, initialized, setCartItems]);
-
-  return {
-    cartItems,
-    setCartItems,
-  };
 };
+
+type GuestCartState = {
+  cartItems: CartItem[];
+
+  setCartItems: (updater: (prev: CartItem[]) => CartItem[]) => void;
+
+  clearCart: () => void;
+
+  addItem: (item: CartItem) => void;
+  updateQuantity: (productId: number, quantity: number) => void;
+  removeItem: (productId: number) => void;
+};
+
+export const useGuestCart = create<GuestCartState>()(
+  persist(
+    (set, get) => ({
+      cartItems: [],
+
+      /**
+       * 🔥 SETTER (GIỐNG useState)
+       */
+      setCartItems: (updater) =>
+        set((state) => ({
+          cartItems: updater(state.cartItems),
+        })),
+
+      /**
+       * 🔥 ADD ITEM
+       */
+      addItem: (item) => {
+        const current = get().cartItems;
+
+        const exist = current.find((i) => i.productId === item.productId);
+
+        if (exist) {
+          set({
+            cartItems: current.map((i) =>
+              i.productId === item.productId
+                ? { ...i, quantity: i.quantity + 1 }
+                : i,
+            ),
+          });
+          return;
+        }
+
+        set({
+          cartItems: [...current, item],
+        });
+      },
+
+      /**
+       * 🔥 UPDATE QUANTITY
+       */
+      updateQuantity: (productId, quantity) => {
+        const current = get().cartItems;
+
+        set({
+          cartItems: current.map((item) => {
+            if (item.productId !== productId) return item;
+            if (quantity < item.minQuantity) return item;
+
+            return { ...item, quantity };
+          }),
+        });
+      },
+
+      /**
+       * 🔥 REMOVE ITEM
+       */
+      removeItem: (productId) => {
+        const current = get().cartItems;
+
+        set({
+          cartItems: current.filter(
+            (item) => item.productId !== productId || item.minQuantity > 0,
+          ),
+        });
+      },
+
+      /**
+       * 🔥 CLEAR CART
+       */
+      clearCart: () => set({ cartItems: [] }),
+    }),
+    {
+      name: "guest-cart-storage",
+
+      /**
+       * 🔥 QUAN TRỌNG
+       * dùng localStorage nhưng SSR-safe
+       */
+      storage: createJSONStorage(() => localStorage),
+
+      /**
+       * 🔥 OPTIONAL: chỉ persist cartItems
+       */
+      partialize: (state) => ({
+        cartItems: state.cartItems,
+      }),
+    },
+  ),
+);

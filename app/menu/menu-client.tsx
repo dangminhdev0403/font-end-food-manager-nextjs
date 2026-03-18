@@ -2,9 +2,9 @@
 
 import { AnimatedSection } from "@/components/animated-section";
 import LuxuryLoading from "@/components/loading";
-import { MagneticButton } from "@/components/magnetic-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import envConfig from "@/config/env.config";
 import { PaginationResponse } from "@/constants/types/page.type";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -165,32 +165,41 @@ export default function MenuClient({ listProduct, meta }: Props) {
         )}
 
         {/* CTA */}
-        <section className="py-16 px-6 bg-gradient-to-br from-amber-900 via-orange-900 to-amber-950 text-white">
-          <div className="container mx-auto text-center">
-            <AnimatedSection animation="fade-in-up">
-              <h2 className="text-3xl md:text-4xl font-bold">
-                Sẵn sàng đặt bàn?
-              </h2>
-            </AnimatedSection>
+        <section className="bg-linear-to-b from-background to-amber-950/20 border-t border-amber-900/20 py-16 px-6">
+          <div className="container mx-auto">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+              <AnimatedSection animation="fade-in-left">
+                <div className="text-center md:text-left">
+                  <h3 className="text-2xl font-bold tracking-tight text-foreground">
+                    {envConfig.NEXT_PUBLIC_NAME_RESTARANT}
+                  </h3>
+                  <p className="mt-2 text-amber-200/60 text-sm">
+                    Vị ngon, trọn khoảnh khắc
+                  </p>
+                </div>
+              </AnimatedSection>
 
-            <AnimatedSection animation="fade-in-up" delay={100}>
-              <p className="mt-4 text-amber-100/70">
-                Liên hệ với chúng tôi để đặt bàn
-              </p>
-            </AnimatedSection>
-
-            <AnimatedSection
-              animation="fade-in-up"
-              delay={200}
-              className="mt-8"
-            >
-              <MagneticButton
-                size="lg"
-                className="bg-white text-amber-900 hover:bg-white/90 px-8"
+              <AnimatedSection
+                animation="fade-in"
+                className="flex gap-8 text-sm text-muted-foreground"
               >
-                Đặt bàn ngay
-              </MagneticButton>
-            </AnimatedSection>
+                <a href="#" className="hover:text-amber-400 transition-colors">
+                  Instagram
+                </a>
+                <a href="#" className="hover:text-amber-400 transition-colors">
+                  Facebook
+                </a>
+                <a href="#" className="hover:text-amber-400 transition-colors">
+                  TikTok
+                </a>
+              </AnimatedSection>
+
+              <AnimatedSection animation="fade-in-right">
+                <p className="text-xs text-muted-foreground">
+                  © 2026 Big Boy Restaurant. All rights reserved.
+                </p>
+              </AnimatedSection>
+            </div>
           </div>
         </section>
       </div>

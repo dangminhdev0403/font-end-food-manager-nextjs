@@ -4,32 +4,18 @@ import ScanTableError from "@/components/errors/scan-table";
 import ScanTableExistError from "@/components/errors/scan-table-exsit";
 import { toast } from "@/components/ui/use-toast";
 import WelcomePage from "@/components/welcome-page";
-import { LOCAL_STORAGE_KEY } from "@/constants/keys/localStorage.key";
 import { logger } from "@/lib/logger";
+import { useSessionStore } from "@/lib/stores/session.store";
 import customerClient from "@/services/internal/customers/customer.client";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useLocalStorage } from "usehooks-ts";
 
 export default function ScanTablePage() {
-  const [guestToken, setGuestToken] = useLocalStorage<string | null>(
-    LOCAL_STORAGE_KEY.GUEST_TOKEN,
-    null,
-  );
-
-  const [tableId, setTableId] = useLocalStorage<number | null>(
-    LOCAL_STORAGE_KEY.TABLE_ID,
-    null,
-  );
-  const [orderId, setOrderId] = useLocalStorage<number | null>(
-    LOCAL_STORAGE_KEY.ORDER_ID,
-    null,
-  );
-  const [tableName, setTableName] = useLocalStorage<string | null>(
-    LOCAL_STORAGE_KEY.TABLE_NAME,
-    null,
-  );
-
+  const { tableId, setSession, hasHydrated } = useSessionStore();
+  const [scannedTable, setScannedTable] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
   const [mounted, setMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasTableError, setHasTableError] = useState(false);
@@ -47,42 +33,30 @@ export default function ScanTablePage() {
    * scan QR
    */
   useEffect(() => {
+    logger.info({ tableId, hasHydrated }, "Session state before scan");
+    if (!hasHydrated) return;
     if (!mounted) return;
     if (!uuid) return;
-
+    if (scannedTable) return;
+    /**
+     * 🚨 đã có bàn trước đó
+     */
+    if (tableId) {
+      logger.info({ tableId }, "Exixt table");
+      setHasTableExistError(true);
+      return;
+    }
     (async () => {
       try {
         const res = await customerClient.scanQrCode(uuid);
 
         const scannedTableId = res.data.table.id;
         const scannedTableName = res.data.table.name;
-
+        setScannedTable({
+          id: scannedTableId,
+          name: scannedTableName,
+        });
         logger.info({ res }, "Scan QR code response:");
-
-        /**
-         * 🚨 đã có bàn trước đó
-         */
-        if (tableId) {
-          /**
-           * cùng bàn -> redirect luôn
-           */
-          if (tableId === scannedTableId) {
-            router.replace(`/tables/detail/${tableId}`);
-            return;
-          }
-
-          /**
-           * khác bàn -> báo lỗi
-           */
-          setHasTableExistError(true);
-          return;
-        }
-
-        /**
-         * chưa có bàn -> lưu
-         */
-        setTableId(scannedTableId);
-        setTableName(scannedTableName);
       } catch (error: any) {
         if (error?.status === 409) {
           setHasTableError(true);
@@ -101,9 +75,9 @@ export default function ScanTablePage() {
         }
       }
     })();
-  }, [uuid, mounted]);
+  }, [uuid, mounted, hasHydrated, tableId]);
 
-  if (!mounted) return null;
+  if (!mounted || !hasHydrated) return null;
 
   /**
    * bàn đã bị chiếm
@@ -123,11 +97,12 @@ export default function ScanTablePage() {
    * submit tên khách
    */
   const handleNameSubmit = async (name: string) => {
+    if (!scannedTable) return;
     setIsLoading(true);
 
     try {
       const tableRes = await customerClient.createOrder({
-        tableId: tableId!,
+        tableId: scannedTable.id,
         guestName: name,
       });
 
@@ -136,11 +111,13 @@ export default function ScanTablePage() {
         variant: "success",
       });
 
-      const guestToken = tableRes.data.guestToken;
-
-      setGuestToken(guestToken);
-      setOrderId(tableRes.data.id);
-      router.push(`/tables/detail/${tableId}`);
+      setSession({
+        guestToken: tableRes.data.guestToken,
+        orderId: tableRes.data.id,
+        tableId: scannedTable.id,
+        tableName: scannedTable.name,
+      });
+      router.push(`/tables/detail/${scannedTable.id}`);
     } catch (error: any) {
       if (error?.status === 409) {
         setHasTableError(true);

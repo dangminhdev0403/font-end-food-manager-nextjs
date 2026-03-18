@@ -1,11 +1,11 @@
 "use client";
 
-import { LOCAL_STORAGE_KEY } from "@/constants/keys/localStorage.key";
+import { useSessionStore } from "@/lib/stores/session.store";
 import { motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { useCountdown, useReadLocalStorage } from "usehooks-ts";
+import { useCountdown } from "usehooks-ts";
 
 export default function ScanTableExistError() {
   const router = useRouter();
@@ -14,13 +14,10 @@ export default function ScanTableExistError() {
     countStart: 30,
     intervalMs: 1000,
   });
-  const tableName = useReadLocalStorage<number | null>(
-    LOCAL_STORAGE_KEY.TABLE_NAME,
-  );
-  const tableId = useReadLocalStorage<number | null>(
-    LOCAL_STORAGE_KEY.TABLE_ID,
-  );
+  const { tableId, tableName, hasHydrated } = useSessionStore();
+
   useEffect(() => {
+    if (!hasHydrated) return;
     startCountdown();
   }, [startCountdown]);
 

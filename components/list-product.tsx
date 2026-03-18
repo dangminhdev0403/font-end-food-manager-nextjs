@@ -1,12 +1,14 @@
 "use client";
 
 import { AnimatedSection } from "@/components/animated-section";
+import { AuthUser } from "@/components/auth/auth-user";
 import { CursorGlow } from "@/components/cursor-glow";
 import { MagneticButton } from "@/components/magnetic-button";
 import { TextReveal } from "@/components/text-reveal";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { logger } from "@/lib/logger";
+import envConfig from "@/config/env.config";
 import { formatCurrency } from "@/lib/utils";
 import { ListProductResponse } from "@/services/internal/products/product.types";
 import {
@@ -15,13 +17,17 @@ import {
   ChefHat,
   Clock,
   MapPin,
+  Menu,
   Phone,
   Star,
   Utensils,
+  X,
 } from "lucide-react";
 import { motion } from "motion/react";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 const features = [
   {
@@ -75,7 +81,67 @@ const galleryImages = [
 interface Props {
   listProduct: ListProductResponse["items"];
 }
+const sections = ["menu", "about", "gallery", "table"];
+
 export default function Home({ listProduct }: Props) {
+  const [active, setActive] = useState("");
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { data: session, status } = useSession();
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+
+      for (const id of sections) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= 120 && rect.bottom >= 120) {
+          setActive(id);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+  let authUI;
+
+  if (status === "loading") {
+    authUI = <div className="w-20 h-8 bg-muted animate-pulse rounded" />;
+  } else if (status === "authenticated") {
+    authUI = (
+      <div className="flex items-center gap-3">
+        {/* Avatar */}
+        <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-white text-sm font-semibold">
+          {session?.user?.name?.charAt(0) || "U"}
+        </div>
+
+        {/* Name */}
+        <span className="text-sm text-foreground hidden sm:block">
+          {session?.user?.name}
+        </span>
+
+        {/* Logout */}
+        <MagneticButton
+          onClick={() => signOut()}
+          className="bg-red-500 text-white hover:bg-red-400"
+        >
+          Đăng xuất
+        </MagneticButton>
+      </div>
+    );
+  } else {
+    authUI = (
+      <MagneticButton className="bg-foreground text-background">
+        <Link href="/login">Đăng nhập</Link>
+      </MagneticButton>
+    );
+  }
   if (!listProduct?.length) {
     return <div>Không có sản phẩm</div>;
   }
@@ -85,47 +151,115 @@ export default function Home({ listProduct }: Props) {
       <CursorGlow />
 
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
+      <nav
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 ${
+          scrolled
+            ? "bg-background/90 backdrop-blur-xl border-b border-border shadow-md"
+            : "bg-transparent"
+        }`}
+      >
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <AnimatedSection animation="fade-in-left" delay={100}>
-            <span className="text-xl font-bold tracking-tight text-foreground">
-              BIG BOY
-            </span>
+          {/* Logo */}
+          <AnimatedSection animation="fade-in-left">
+            <span className="text-xl font-bold text-foreground">BIG BOY</span>
           </AnimatedSection>
-          <AnimatedSection animation="fade-in-right" delay={100}>
-            <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-              <a
-                href="#menu"
-                className="hover:text-foreground transition-colors"
+
+          {/* Desktop menu */}
+          <div className="hidden md:flex gap-8 text-sm">
+            {sections.map((id) => (
+              <button
+                key={id}
+                onClick={() => {
+                  document
+                    .getElementById(id)
+                    ?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className={`relative transition ${
+                  active === id
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
-                Thực đơn
-              </a>
-              <a
-                href="#about"
-                className="hover:text-foreground transition-colors"
-              >
-                Về chúng tôi
-              </a>
-              <a
-                href="#gallery"
-                className="hover:text-foreground transition-colors"
-              >
-                Không gian
-              </a>
-              <a
-                href="#table"
-                className="hover:text-foreground transition-colors"
-              >
-                Liên hệ
-              </a>
+                {id === "menu"
+                  ? "Thực đơn"
+                  : id === "about"
+                    ? "Về chúng tôi"
+                    : id === "gallery"
+                      ? "Không gian"
+                      : "Liên hệ"}
+
+                <span
+                  className={`absolute left-0 -bottom-1 h-[1px] bg-foreground transition-all ${
+                    active === id ? "w-full" : "w-0"
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
+
+          {/* Right */}
+          <div className="flex items-center gap-4">
+            {/* 👉 chỉ hiện khi desktop */}
+            <div className="hidden md:block">
+              <AuthUser />
             </div>
-          </AnimatedSection>
-          <AnimatedSection animation="fade-in-right" delay={200}>
-            <MagneticButton className="bg-foreground text-background hover:bg-foreground/90">
-              <Link href={"/login"}> Đăng nhập</Link>
-            </MagneticButton>
-          </AnimatedSection>
+
+            {/* Mobile toggle */}
+            <button
+              onClick={() => setOpen((prev) => !prev)}
+              className="md:hidden"
+            >
+              {open ? <X /> : <Menu />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile menu */}
+        {open && (
+          <div className="md:hidden bg-background border-t border-border animate-in slide-in-from-top-2 duration-300">
+            <div className="flex flex-col p-6 gap-4">
+              {sections.map((id) => (
+                <button
+                  key={id}
+                  onClick={() => {
+                    document
+                      .getElementById(id)
+                      ?.scrollIntoView({ behavior: "smooth" });
+                    setOpen(false);
+                  }}
+                  className="text-left text-muted-foreground hover:text-foreground"
+                >
+                  {id === "menu"
+                    ? "Thực đơn"
+                    : id === "about"
+                      ? "Về chúng tôi"
+                      : id === "gallery"
+                        ? "Không gian"
+                        : "Liên hệ"}
+                </button>
+              ))}
+
+              {/* Auth mobile */}
+              {status === "loading" ? null : status === "authenticated" ? (
+                <MagneticButton
+                  onClick={() => {
+                    signOut();
+                    setOpen(false);
+                  }}
+                  className="w-full bg-red-500 text-white "
+                >
+                  Đăng xuất
+                </MagneticButton>
+              ) : (
+                <Link href="/login" onClick={() => setOpen(false)}>
+                  <MagneticButton className="w-full bg-foreground text-background ">
+                    Đăng nhập
+                  </MagneticButton>
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
@@ -312,7 +446,7 @@ export default function Home({ listProduct }: Props) {
                     <p className="mt-2 text-sm text-muted-foreground line-clamp-2 leading-relaxed flex-1">
                       {item.description}
                     </p>
-                    {/* <Button variant="food">Thêm vào giỏ</Button> */}
+                    <Button variant="food">Thêm vào giỏ</Button>
                   </CardContent>
                 </Card>
               </AnimatedSection>
@@ -515,7 +649,7 @@ export default function Home({ listProduct }: Props) {
             <AnimatedSection animation="fade-in-left">
               <div className="text-center md:text-left">
                 <h3 className="text-2xl font-bold tracking-tight text-foreground">
-                  BIG BOY
+                  {envConfig.NEXT_PUBLIC_NAME_RESTARANT}
                 </h3>
                 <p className="mt-2 text-amber-200/60 text-sm">
                   Vị ngon, trọn khoảnh khắc

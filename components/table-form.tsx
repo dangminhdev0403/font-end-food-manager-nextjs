@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { logger } from "@/lib/logger";
 
 import {
   TableFormValues,
@@ -48,8 +47,6 @@ export default function TableForm({
   });
 
   const onTableSubmit = (data: TableFormValues) => {
-    logger.info({ initialData }, "Submitting table form with data:");
-
     onSubmit({ ...data, id: initialData?.id ?? Date.now() }); // Nếu có initialData thì dùng id đó, nếu không thì tạo id mới bằng timestamp
     onClose();
   };

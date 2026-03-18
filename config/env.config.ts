@@ -8,6 +8,7 @@ const configSchema = z.object({
   NEXT_PUBLIC_REFRESH_EXPIRES_IN_SECONDS: z.string(),
   AUTH_SECRET: z.string().optional(),
   NEXT_PUBLIC_CATEGORY_ID: z.string(),
+  NEXT_PUBLIC_NAME_RESTARANT: z.string(),
 });
 
 const configProject = configSchema.safeParse({
@@ -19,6 +20,7 @@ const configProject = configSchema.safeParse({
   NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
 
   AUTH_SECRET: process.env.AUTH_SECRET,
+  NEXT_PUBLIC_NAME_RESTARANT: process.env.NEXT_PUBLIC_NAME_RESTARANT,
 
   NEXT_PUBLIC_REFRESH_EXPIRES_IN_SECONDS:
     process.env.NEXT_PUBLIC_REFRESH_EXPIRES_IN_SECONDS,

@@ -20,14 +20,17 @@ export const queryKeys = {
       root: ["admin-tables"] as const,
     },
   ),
-
+  adminOrders: Object.assign(() => ["admin-orders", "status-count"] as const, {
+    root: ["admin-orders"] as const,
+    statusCounts: () => ["admin-orders", "status-count"] as const,
+  }),
   profile: ["account-profile"] as const,
   adminTableCounts: ["admin-table-counts"] as const,
   //? product
   adminProducts: Object.assign(
     (params?: GetListProductParams) =>
       [
-        "admin-product",
+        "admin-products",
         {
           page: params?.page ?? 1,
           size: params?.size ?? 10,

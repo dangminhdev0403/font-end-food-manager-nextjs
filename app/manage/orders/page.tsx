@@ -5,7 +5,6 @@ import { OrdersFilters } from "@/components/orders/order-filter";
 import { OrdersList } from "@/components/orders/order-list";
 import { OrderStatsCards } from "@/components/orders/order-stats-cards";
 import { toast } from "@/components/ui/use-toast";
-import { useAdminOrdersRealtime } from "@/lib/hooks/sockets/use-admin-orders-realtime";
 import { logger } from "@/lib/logger";
 import { useOrderStatusCounts } from "@/queries/admin/useAdminOrders";
 import { adminOrderResource } from "@/resources/admin-order.resource";
@@ -28,7 +27,8 @@ export default function OrdersPage() {
     status: selectedStatus,
     search: debouncedSearch.trim(),
   });
-  const { data: dataStatus, isLoading: statusLoading } = useOrderStatusCounts();
+  // const { data: dataStatus, isLoading: statusLoading } = useOrderStatusCounts();
+  const { data: dataStatus, isLoading: statusLoading } = adminOrderResource.extraQueries.statusCounts();
   const orders = data?.items ?? [];
 
   const updateOrderMutation = adminOrderResource.useUpdateMutation();

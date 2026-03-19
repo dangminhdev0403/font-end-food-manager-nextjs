@@ -1,6 +1,7 @@
 "use client";
 
 import { toast } from "@/components/ui/use-toast";
+import { queryKeys } from "@/constants/keys/queryKeys";
 import { socket } from "@/lib/socket/socket";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -19,7 +20,7 @@ export const useAdminOrdersRealtime = () => {
 
     const handleNewOrder = (data: any) => {
       queryClient.invalidateQueries({
-        queryKey: ["admin-orders"],
+        queryKey: queryKeys.adminOrders.root,
       });
 
       toast({
@@ -29,10 +30,8 @@ export const useAdminOrdersRealtime = () => {
     };
 
     const handleOrderUpdate = (data: any) => {
-     
-
       queryClient.invalidateQueries({
-        queryKey: ["admin-orders"],
+        queryKey: queryKeys.adminOrders.root,
       });
     };
 

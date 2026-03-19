@@ -1,26 +1,26 @@
 import {
   keepPreviousData,
   useMutation,
-  UseMutationResult,
   useQuery,
   useQueryClient,
-  UseQueryResult,
 } from "@tanstack/react-query";
 import { AxiosResponse } from "axios";
 
 /* ---------------- TYPE HELPERS ---------------- */
 
-type InferResponse<T> = T extends (
-  ...args: any
-) => Promise<AxiosResponse<infer R>>
-  ? R
+type AwaitedReturn<T> = T extends Promise<infer R> ? R : T;
+
+type ExtractAxios<T> = T extends AxiosResponse<infer R> ? R : T;
+
+type InferResponse<T> = T extends (...args: any) => any
+  ? ExtractAxios<AwaitedReturn<ReturnType<T>>>
   : never;
 
 type InferParams<T> = T extends (params?: infer P) => any ? P : never;
 
 type InferBody<T> = T extends (body: infer B) => any ? B : never;
 
-/* ---------------- CLIENT TYPE ---------------- */
+/* ---------------- CLIENT ---------------- */
 
 type ResourceClient = {
   getList?: (params?: any) => Promise<AxiosResponse<any>>;
@@ -30,59 +30,108 @@ type ResourceClient = {
   delete?: (id: number) => Promise<any>;
 };
 
-/* ---------------- RESOURCE TYPE ---------------- */
+/* ---------------- EXTRA TYPES ---------------- */
 
-type Resource<TClient extends ResourceClient> = {
+type ExtraQuery<TFn extends (...args: any) => Promise<any>> = {
+  fn: TFn;
+  key: (...args: Parameters<TFn>) => readonly any[];
+};
+
+type ExtraMutation<TFn extends (...args: any) => Promise<any>> = {
+  fn: TFn;
+  invalidate?: readonly any[] | readonly any[][];
+};
+
+type ExtraQueries = Record<string, ExtraQuery<any>>;
+type ExtraMutations = Record<string, ExtraMutation<any>>;
+
+type ResourceReturn<
+  TClient extends ResourceClient,
+  TExtraQ extends ExtraQueries,
+  TExtraM extends ExtraMutations,
+> = {
   queryKeys: {
     root: readonly [string];
     list: (params?: InferParams<TClient["getList"]>) => readonly unknown[];
     detail: (id: number) => readonly unknown[];
   };
-} & (TClient["getList"] extends undefined
-  ? {}
-  : {
+} & (TClient["getList"] extends (...args: any) => any
+  ? {
       useListQuery: (
         params?: InferParams<TClient["getList"]>,
-      ) => UseQueryResult<InferResponse<TClient["getList"]>>;
-    }) &
-  (TClient["getById"] extends undefined
-    ? {}
-    : {
+      ) => ReturnType<typeof useQuery<InferResponse<TClient["getList"]>>>;
+    }
+  : {}) &
+  (TClient["getById"] extends (...args: any) => any
+    ? {
         useGetByIdQuery: (
           id?: number,
-        ) => UseQueryResult<InferResponse<TClient["getById"]> | null>;
-      }) &
-  (TClient["create"] extends undefined
-    ? {}
-    : {
-        useCreateMutation: () => UseMutationResult<
-          unknown,
-          unknown,
-          InferBody<TClient["create"]>
+        ) => ReturnType<
+          typeof useQuery<InferResponse<TClient["getById"]> | null>
         >;
-      }) &
-  (TClient["update"] extends undefined
-    ? {}
-    : {
-        useUpdateMutation: () => UseMutationResult<
-          unknown,
-          unknown,
-          InferBody<TClient["update"]>
+      }
+    : {}) &
+  (TClient["create"] extends (...args: any) => any
+    ? {
+        useCreateMutation: () => ReturnType<
+          typeof useMutation<
+            AwaitedReturn<ReturnType<TClient["create"]>>,
+            unknown,
+            InferBody<TClient["create"]>
+          >
         >;
-      }) &
-  (TClient["delete"] extends undefined
-    ? {}
-    : {
-        useDeleteMutation: () => UseMutationResult<unknown, unknown, number>;
-      });
+      }
+    : {}) &
+  (TClient["update"] extends (...args: any) => any
+    ? {
+        useUpdateMutation: () => ReturnType<
+          typeof useMutation<
+            AwaitedReturn<ReturnType<TClient["update"]>>,
+            unknown,
+            InferBody<TClient["update"]>
+          >
+        >;
+      }
+    : {}) &
+  (TClient["delete"] extends (...args: any) => any
+    ? {
+        useDeleteMutation: () => ReturnType<
+          typeof useMutation<
+            AwaitedReturn<ReturnType<TClient["delete"]>>,
+            unknown,
+            number
+          >
+        >;
+      }
+    : {}) & {
+    extraQueries: {
+      [K in keyof TExtraQ]: (
+        ...args: Parameters<TExtraQ[K]["fn"]>
+      ) => ReturnType<typeof useQuery<InferResponse<TExtraQ[K]["fn"]>>>;
+    };
+    extraMutations: {
+      [K in keyof TExtraM]: () => ReturnType<
+        typeof useMutation<
+          AwaitedReturn<ReturnType<TExtraM[K]["fn"]>>,
+          unknown,
+          Parameters<TExtraM[K]["fn"]>[0]
+        >
+      >;
+    };
+  };
 
 /* ---------------- MAIN ---------------- */
-
-export function createResource<TClient extends ResourceClient>(config: {
+export function createResource<
+  TClient extends ResourceClient,
+  TExtraQ extends ExtraQueries = {},
+  TExtraM extends ExtraMutations = {},
+>(config: {
   key: string;
   client: TClient;
-}): Resource<TClient> {
-  const { key, client } = config;
+  extraQueries?: TExtraQ;
+  extraMutations?: TExtraM;
+}): ResourceReturn<TClient, TExtraQ, TExtraM> {
+  const { key, client, extraQueries, extraMutations } = config;
 
   const queryKeys = {
     root: [key] as const,
@@ -92,10 +141,9 @@ export function createResource<TClient extends ResourceClient>(config: {
 
   const resource: any = { queryKeys };
 
-  /* ---------------- LIST ---------------- */
-
+  /* LIST */
   if (client.getList) {
-    resource.useListQuery = (params?: InferParams<TClient["getList"]>) =>
+    resource.useListQuery = (params: any) =>
       useQuery({
         queryKey: queryKeys.list(params),
         queryFn: async () => {
@@ -106,76 +154,57 @@ export function createResource<TClient extends ResourceClient>(config: {
       });
   }
 
-  /* ---------------- DETAIL ---------------- */
-
-  if (client.getById) {
-    resource.useGetByIdQuery = (id?: number) =>
-      useQuery({
-        queryKey: id ? queryKeys.detail(id) : [],
-        queryFn: async () => {
-          if (!id) return null;
-          const res = await client.getById!(id);
-          return res.data;
-        },
-        enabled: !!id,
-      });
-  }
-
-  /* ---------------- CREATE ---------------- */
-
-  if (client.create) {
-    resource.useCreateMutation = () => {
-      const queryClient = useQueryClient();
-
-      return useMutation({
-        mutationFn: (body: InferBody<TClient["create"]>) =>
-          client.create!(body),
-
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: queryKeys.root,
-          });
-        },
-      });
-    };
-  }
-
-  /* ---------------- UPDATE ---------------- */
-
+  /* UPDATE */
   if (client.update) {
     resource.useUpdateMutation = () => {
-      const queryClient = useQueryClient();
+      const qc = useQueryClient();
 
       return useMutation({
-        mutationFn: (body: InferBody<TClient["update"]>) =>
-          client.update!(body),
-
+        mutationFn: (body: any) => client.update!(body),
         onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: queryKeys.root,
-          });
+          qc.invalidateQueries({ queryKey: queryKeys.root });
         },
       });
     };
   }
 
-  /* ---------------- DELETE ---------------- */
+  /* EXTRA QUERY */
+  if (extraQueries) {
+    resource.extraQueries = {};
 
-  if (client.delete) {
-    resource.useDeleteMutation = () => {
-      const queryClient = useQueryClient();
+    for (const k in extraQueries) {
+      const q = extraQueries[k];
 
-      return useMutation({
-        mutationFn: (id: number) => client.delete!(id),
-
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: queryKeys.root,
-          });
-        },
-      });
-    };
+      resource.extraQueries[k] = (...args: any[]) =>
+        useQuery({
+          queryKey: q.key(...args),
+          queryFn: async () => {
+            const res = await q.fn(...args);
+            return res.data;
+          },
+        });
+    }
   }
 
-  return resource as Resource<TClient>;
+  /* EXTRA MUTATION */
+  if (extraMutations) {
+    resource.extraMutations = {};
+
+    for (const k in extraMutations) {
+      const m = extraMutations[k];
+
+      resource.extraMutations[k] = () => {
+        const qc = useQueryClient();
+
+        return useMutation({
+          mutationFn: (...args: any[]) => m.fn(...args),
+          onSuccess: () => {
+            qc.invalidateQueries({ queryKey: queryKeys.root });
+          },
+        });
+      };
+    }
+  }
+
+  return resource;
 }

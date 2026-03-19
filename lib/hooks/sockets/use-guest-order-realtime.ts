@@ -1,6 +1,7 @@
 "use client";
 
 import { toast } from "@/components/ui/use-toast";
+import { queryKeys } from "@/constants/keys/queryKeys";
 import { socket } from "@/lib/socket/socket";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -23,7 +24,7 @@ export const useGuestOrderRealtime = (orderId?: number) => {
 
     socket.on("order:update", (data) => {
       queryClient.invalidateQueries({
-        queryKey: ["guest-order"],
+        queryKey: queryKeys.listOrderGuest,
       });
 
       toast({
@@ -34,7 +35,7 @@ export const useGuestOrderRealtime = (orderId?: number) => {
 
     socket.on("order:status", (data) => {
       queryClient.invalidateQueries({
-        queryKey: ["guest-order"],
+        queryKey: queryKeys.listOrderGuest,
       });
 
       toast({

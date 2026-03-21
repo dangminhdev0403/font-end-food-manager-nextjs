@@ -41,6 +41,7 @@ export const useGuestOrderRealtime = (orderId?: number) => {
       toast({
         title: "📦 Trạng thái đơn",
         description: `Đơn #${data.id} → ${data.status}`,
+        variant: "success",
       });
     });
 

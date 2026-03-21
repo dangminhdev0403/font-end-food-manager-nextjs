@@ -9,6 +9,7 @@ export type CartItem = {
   price: number;
   quantity: number;
   minQuantity: number;
+  isPersisted: boolean; // 🔥 FIX: flag đúng chỗ
 };
 
 type GuestCartState = {
@@ -17,8 +18,7 @@ type GuestCartState = {
   setCartItems: (updater: (prev: CartItem[]) => CartItem[]) => void;
 
   clearCart: () => void;
-
-  addItem: (item: CartItem) => void;
+  addItem: (item: Omit<CartItem, "isPersisted" | "minQuantity">) => void;
   updateQuantity: (productId: number, quantity: number) => void;
   removeItem: (productId: number) => void;
 };
@@ -29,7 +29,7 @@ export const useGuestCart = create<GuestCartState>()(
       cartItems: [],
 
       /**
-       * 🔥 SETTER (GIỐNG useState)
+       * 🔥 SETTER
        */
       setCartItems: (updater) =>
         set((state) => ({
@@ -37,7 +37,7 @@ export const useGuestCart = create<GuestCartState>()(
         })),
 
       /**
-       * 🔥 ADD ITEM
+       * 🔥 ADD ITEM (LOCAL → isPersisted = false)
        */
       addItem: (item) => {
         const current = get().cartItems;
@@ -56,7 +56,15 @@ export const useGuestCart = create<GuestCartState>()(
         }
 
         set({
-          cartItems: [...current, item],
+          cartItems: [
+            ...current,
+            {
+              ...item,
+              quantity: 1,
+              minQuantity: 0,
+              isPersisted: false, // 🔥 KEY
+            },
+          ],
         });
       },
 
@@ -69,6 +77,7 @@ export const useGuestCart = create<GuestCartState>()(
         set({
           cartItems: current.map((item) => {
             if (item.productId !== productId) return item;
+
             if (quantity < item.minQuantity) return item;
 
             return { ...item, quantity };
@@ -78,34 +87,27 @@ export const useGuestCart = create<GuestCartState>()(
 
       /**
        * 🔥 REMOVE ITEM
+       * ❌ KHÔNG xoá nếu item từ server
        */
       removeItem: (productId) => {
         const current = get().cartItems;
 
         set({
           cartItems: current.filter(
-            (item) => item.productId !== productId || item.minQuantity > 0,
+            (item) => item.productId !== productId || item.isPersisted,
           ),
         });
       },
 
       /**
-       * 🔥 CLEAR CART
+       * 🔥 CLEAR
        */
       clearCart: () => set({ cartItems: [] }),
     }),
     {
       name: "guest-cart-storage",
-
-      /**
-       * 🔥 QUAN TRỌNG
-       * dùng localStorage nhưng SSR-safe
-       */
       storage: createJSONStorage(() => localStorage),
 
-      /**
-       * 🔥 OPTIONAL: chỉ persist cartItems
-       */
       partialize: (state) => ({
         cartItems: state.cartItems,
       }),

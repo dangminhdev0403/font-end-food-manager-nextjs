@@ -16,7 +16,7 @@ export interface OrderGuestItem {
   id: number;
   name: string;
   description: string;
-
+  productId: number;
   price: number;
   quantity: number;
   total: number;

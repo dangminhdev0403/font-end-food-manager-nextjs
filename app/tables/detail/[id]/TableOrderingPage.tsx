@@ -5,8 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { useGuestCart } from "@/lib/hooks/useGuestCart";
+import { logger } from "@/lib/logger";
 import { useSessionStore } from "@/lib/stores/session.store";
-import { useGuestUpdateOrderMutation } from "@/queries/guests/useGuest";
+import {
+  useGuestGetListOrderQuery,
+  useGuestUpdateOrderMutation,
+} from "@/queries/guests/useGuest";
 import { useGetListProductClientQuery } from "@/queries/products/useProductClient";
 import { Table } from "@/services/internal/customers/customer.types";
 import { ProductItem } from "@/services/internal/products/product.types";
@@ -29,6 +33,21 @@ export default function TableOrderingPage({ table }: Props) {
   const { guestToken, orderId, tableId, hasHydrated } = useSessionStore();
 
   const { cartItems, setCartItems } = useGuestCart();
+  const { data: order, isLoading: isLoadingOrder } =
+    useGuestGetListOrderQuery();
+
+  useEffect(() => {
+    if (!order?.data?.items) return;
+
+    setCartItems(() =>
+      order.data.items.map((item) => ({
+        ...item,
+        quantity: item.quantity,
+        minQuantity: item.quantity,
+        isPersisted: true,
+      })),
+    );
+  }, [order?.data?.items, setCartItems]);
 
   const { mutateAsync: updateOrder, isPending } = useGuestUpdateOrderMutation();
 
@@ -75,6 +94,7 @@ export default function TableOrderingPage({ table }: Props) {
             price: item.virtualPrice,
             quantity: 1,
             minQuantity: 0,
+            isPersisted: false,
           },
         ];
       });
@@ -96,7 +116,7 @@ export default function TableOrderingPage({ table }: Props) {
     },
     [setCartItems],
   );
-
+  logger.info(cartItems);
   /* UPDATE QUANTITY */
 
   const updateQuantity = useCallback(
@@ -177,7 +197,7 @@ export default function TableOrderingPage({ table }: Props) {
 
   // AUTH GUARD
 
-  if (isLoading || status === "loading" || !hasHydrated) {
+  if (isLoading || isLoadingOrder || status === "loading" || !hasHydrated) {
     return <LuxuryLoading text="Đang tải Thực Đơn" />;
   }
   if (!data?.user && !guestToken) {
@@ -304,10 +324,11 @@ export default function TableOrderingPage({ table }: Props) {
                 >
                   <div className="flex justify-between">
                     <span>{item.name}</span>
-
-                    <button onClick={() => removeFromCart(item.productId)}>
-                      <Trash2 size={16} className="text-red-500" />
-                    </button>
+                    {!item.isPersisted && (
+                      <button onClick={() => removeFromCart(item.productId)}>
+                        <Trash2 size={16} className="text-red-500" />
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex justify-between mt-2">
@@ -316,13 +337,17 @@ export default function TableOrderingPage({ table }: Props) {
                     </span>
 
                     <div className="flex gap-2 items-center">
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.productId, item.quantity - 1)
-                        }
-                      >
-                        <Minus size={16} />
-                      </button>
+                      {(item.isPersisted
+                        ? item.quantity > item.minQuantity
+                        : item.quantity > 1) && (
+                        <button
+                          onClick={() =>
+                            updateQuantity(item.productId, item.quantity - 1)
+                          }
+                        >
+                          <Minus size={16} />
+                        </button>
+                      )}
 
                       <span>{item.quantity}</span>
 
@@ -376,19 +401,25 @@ export default function TableOrderingPage({ table }: Props) {
                     </p>
                   </div>
 
-                  <button onClick={() => removeFromCart(item.productId)}>
-                    <Trash2 size={14} className="text-red-500" />
-                  </button>
+                  {/* chỉ hiện delete khi = minQuantity */}
+                  {item.quantity === item.minQuantity && (
+                    <button onClick={() => removeFromCart(item.productId)}>
+                      <Trash2 size={14} className="text-red-500" />
+                    </button>
+                  )}
                 </div>
 
                 <div className="flex gap-2 items-center justify-end mt-2">
-                  <button
-                    onClick={() =>
-                      updateQuantity(item.productId, item.quantity - 1)
-                    }
-                  >
-                    <Minus size={14} />
-                  </button>
+                  {/* chỉ cho giảm khi > minQuantity */}
+                  {item.quantity > item.minQuantity && (
+                    <button
+                      onClick={() =>
+                        updateQuantity(item.productId, item.quantity - 1)
+                      }
+                    >
+                      <Minus size={14} />
+                    </button>
+                  )}
 
                   <span className="text-sm">{item.quantity}</span>
 

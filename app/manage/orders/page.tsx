@@ -6,7 +6,6 @@ import { OrdersList } from "@/components/orders/order-list";
 import { OrderStatsCards } from "@/components/orders/order-stats-cards";
 import { toast } from "@/components/ui/use-toast";
 import { logger } from "@/lib/logger";
-import { useOrderStatusCounts } from "@/queries/admin/useAdminOrders";
 import { adminOrderResource } from "@/resources/admin-order.resource";
 import { OrderStatus } from "@/services/internal/customers/guests/guest.types";
 
@@ -27,8 +26,9 @@ export default function OrdersPage() {
     status: selectedStatus,
     search: debouncedSearch.trim(),
   });
-  // const { data: dataStatus, isLoading: statusLoading } = useOrderStatusCounts();
-  const { data: dataStatus, isLoading: statusLoading } = adminOrderResource.extraQueries.statusCounts();
+
+  const { data: dataStatus, isLoading: statusLoading } =
+    adminOrderResource.extraQueries.statusCounts();
   const orders = data?.items ?? [];
 
   const updateOrderMutation = adminOrderResource.useUpdateMutation();

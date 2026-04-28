@@ -140,7 +140,19 @@ export function createResource<
   };
 
   const resource: any = { queryKeys };
+  if (client.create) {
+    resource.useCreateMutation = () => {
+      const qc = useQueryClient();
 
+      return useMutation({
+        mutationFn: (body: any) => client.create!(body),
+
+        onSuccess: () => {
+          qc.invalidateQueries({ queryKey: queryKeys.root });
+        },
+      });
+    };
+  }
   /* LIST */
   if (client.getList) {
     resource.useListQuery = (params: any) =>
@@ -153,7 +165,19 @@ export function createResource<
         placeholderData: keepPreviousData,
       });
   }
-
+  /* GET BY ID */
+  if (client.getById) {
+    resource.useGetByIdQuery = (id?: number) =>
+      useQuery({
+        queryKey: id ? queryKeys.detail(id) : [],
+        queryFn: async () => {
+          if (!id) return null;
+          const res = await client.getById!(id);
+          return res.data;
+        },
+        enabled: !!id, // 🔥 quan trọng: tránh call khi undefined
+      });
+  }
   /* UPDATE */
   if (client.update) {
     resource.useUpdateMutation = () => {
@@ -167,7 +191,19 @@ export function createResource<
       });
     };
   }
+  /* DELETE */
+  if (client.delete) {
+    resource.useDeleteMutation = () => {
+      const qc = useQueryClient();
 
+      return useMutation({
+        mutationFn: (id: number) => client.delete!(id),
+        onSuccess: () => {
+          qc.invalidateQueries({ queryKey: queryKeys.root });
+        },
+      });
+    };
+  }
   /* EXTRA QUERY */
   if (extraQueries) {
     resource.extraQueries = {};

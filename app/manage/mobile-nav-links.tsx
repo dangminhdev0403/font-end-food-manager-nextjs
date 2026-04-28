@@ -12,9 +12,17 @@ import { cn } from "@/lib/utils";
 import { PanelLeft } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function MobileNavLinks() {
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null; // 🔥 quan trọng
+
   return (
     <Sheet>
       <SheetTrigger asChild>

@@ -1,11 +1,12 @@
 import DropdownAvatar from "@/app/manage/dropdown-avatar";
-import MobileNavLinks from "@/app/manage/mobile-nav-links";
+
 import NavLinks from "@/app/manage/nav-links";
 import DarkModeToggle from "@/components/dark-mode-toggle";
 import AdminRealtimeListener from "@/components/listener/admin-realtime-listener";
 import { auth } from "@/config/authentication/auth";
 
 import type React from "react";
+import MobileNavLinks from "./mobile-nav-links";
 
 export default async function Layout({
   children,

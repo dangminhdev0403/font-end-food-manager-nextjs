@@ -35,7 +35,7 @@ export default function EditDish({
   setId: (value: number | undefined) => void;
   onSubmitSuccess?: () => void;
 }) {
-  const dishQuery = productResource.useGetByIdQuery(id);
+  const dishQuery = productResource.useGetByIdQuery(id as number);
   const updateProductMutation = productResource.useUpdateMutation();
   const uploadMutation = useUploadImageMutation();
 
@@ -53,7 +53,7 @@ export default function EditDish({
       },
     });
   const image = form.watch("image");
-  
+
   useEffect(() => {
     const dish = dishQuery?.data;
     if (!dish) return;

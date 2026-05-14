@@ -52,7 +52,7 @@ export default function LoginForm() {
       const callbackUrl = searchParams.get("callbackUrl");
       const nextPath = isSafeInternalCallbackUrl(callbackUrl)
         ? callbackUrl
-        : "/manage/dashboard";
+        : "/user";
       router.refresh();
       router.push(nextPath);
     }

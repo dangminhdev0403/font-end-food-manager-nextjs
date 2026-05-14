@@ -10,14 +10,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import {
   TableFormValues,
   TableItemForm,
   tableSchema,
 } from "@/schemaValidations/table.schema";
 import { TableItem } from "@/services/internal/admin/tables/table.types";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 
@@ -47,75 +45,82 @@ export default function TableForm({
   });
 
   const onTableSubmit = (data: TableFormValues) => {
-    onSubmit({ ...data, id: initialData?.id ?? Date.now() }); // Nếu có initialData thì dùng id đó, nếu không thì tạo id mới bằng timestamp
+    onSubmit({ ...data, id: initialData?.id ?? Date.now() });
     onClose();
   };
 
   return (
-    <form onSubmit={handleSubmit(onTableSubmit)} className="space-y-4">
-      {/* Name */}
+    <form
+      onSubmit={handleSubmit(onTableSubmit)}
+      className="space-y-4"
+      noValidate
+    >
       <div className="space-y-2">
-        <Label>Tên Bàn</Label>
-        <Input {...register("name")} />
+        <Label htmlFor="table-name">Tên bàn</Label>
+        <Input id="table-name" className="h-11" {...register("name")} />
         {errors.name && (
-          <p className="text-sm text-red-500">{errors.name.message}</p>
+          <p role="alert" className="text-sm text-destructive">
+            {errors.name.message}
+          </p>
         )}
       </div>
 
-      {/* Capacity */}
       <div className="space-y-2">
-        <Label>Sức Chứa (người)</Label>
+        <Label htmlFor="table-capacity">Sức chứa (người)</Label>
         <Input
+          id="table-capacity"
           type="number"
           min={1}
           max={20}
+          inputMode="numeric"
+          className="h-11"
           {...register("capacity", { valueAsNumber: true })}
         />
         {errors.capacity && (
-          <p className="text-sm text-red-500">{errors.capacity.message}</p>
+          <p role="alert" className="text-sm text-destructive">
+            {errors.capacity.message}
+          </p>
         )}
       </div>
 
-      {/* Status (chỉ edit mới hiện) */}
       {initialData && (
         <div className="space-y-2">
-          <Label>Trạng Thái</Label>
-
+          <Label htmlFor="table-status">Trạng thái</Label>
           <Controller
             control={control}
             name="status"
             render={({ field }) => (
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger>
+                <SelectTrigger id="table-status" className="h-11">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="EMPTY">Trống</SelectItem>
-                  <SelectItem value="OCCUPIED">Đang Dùng</SelectItem>
-                  <SelectItem value="RESERVED">Đặt Trước</SelectItem>
+                  <SelectItem value="OCCUPIED">Đang dùng</SelectItem>
+                  <SelectItem value="RESERVED">Đặt trước</SelectItem>
                 </SelectContent>
               </Select>
             )}
           />
-
           {errors.status && (
-            <p className="text-sm text-red-500">{errors.status.message}</p>
+            <p role="alert" className="text-sm text-destructive">
+              {errors.status.message}
+            </p>
           )}
         </div>
       )}
 
-      <div className="flex gap-2 pt-4">
-        <Button type="submit" className="flex-1">
-          {initialData ? "Cập Nhật" : "Thêm Bàn"}
-        </Button>
-
+      <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row">
         <Button
           type="button"
           variant="outline"
           onClick={onClose}
-          className="flex-1"
+          className="h-11 flex-1"
         >
-          Hủy
+          Huỷ
+        </Button>
+        <Button type="submit" className="h-11 flex-1">
+          {initialData ? "Cập nhật" : "Thêm bàn"}
         </Button>
       </div>
     </form>

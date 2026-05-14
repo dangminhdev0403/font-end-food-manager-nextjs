@@ -1,33 +1,33 @@
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default function Loading() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Skeleton */}
-        <div className="mb-8">
-          <div className="h-10 bg-slate-700 rounded-lg w-64 mb-2 animate-pulse" />
-          <div className="h-5 bg-slate-700 rounded-lg w-96 animate-pulse" />
+    <main className="min-h-dvh bg-background">
+      <div className="container mx-auto space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-5 w-96 max-w-full" />
         </div>
 
-        {/* Content Skeleton */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Sidebar Skeleton */}
-          <div className="space-y-3">
-            <div className="h-8 bg-slate-700 rounded-lg w-32 animate-pulse" />
-            {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="h-20 bg-slate-700 rounded-lg animate-pulse"
-              />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <Card>
+            <CardContent className="space-y-3 p-4 sm:p-6">
+              <Skeleton className="h-8 w-32" />
+              {Array.from({ length: 4 }, (_, i) => `role-skeleton-${i}`).map(
+                (key) => (
+                  <Skeleton key={key} className="h-20 w-full" />
+                ),
+              )}
+            </CardContent>
+          </Card>
 
-          {/* Main Content Skeleton */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="h-48 bg-slate-700 rounded-lg animate-pulse" />
-            <div className="h-64 bg-slate-700 rounded-lg animate-pulse" />
+          <div className="space-y-6 lg:col-span-2">
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-64 w-full" />
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

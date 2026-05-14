@@ -6,11 +6,8 @@ export default async function Layout({
   children: React.ReactNode;
 }>) {
   return (
-    <div>
-      {/* Main content area */}
-
-      {/* Page content */}
-      <main className="flex-1 ">{children}</main>
+    <div className="min-h-dvh bg-background text-foreground">
+      <main className="flex-1">{children}</main>
     </div>
   );
 }

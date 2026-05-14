@@ -25,7 +25,7 @@ export default function UpdateProfileForm() {
   const [file, setFile] = useState<File | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const { data } = useAccountProfileQuery();
-  
+
   const profile = data?.data;
   const form = useForm<UpdateMeBodyType>({
     resolver: zodResolver(UpdateMeBody),
@@ -33,16 +33,15 @@ export default function UpdateProfileForm() {
   });
 
   const avatar = form.watch("avatar");
-  const email = form.watch("email");
   const name = form.watch("name");
   const previewAvatar = file ? URL.createObjectURL(file) : avatar;
+
   useEffect(() => {
     if (!profile) return;
 
     form.reset({
       name: profile?.name,
       email: profile?.email,
-      // avatar: profile.avatar,
     });
   }, [profile, form]);
 
@@ -51,27 +50,29 @@ export default function UpdateProfileForm() {
       <form className="space-y-6" noValidate>
         <Card>
           <CardHeader>
-            <CardTitle>Thông tin cá nhân</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-base sm:text-lg">
+              Thông tin cá nhân
+            </CardTitle>
+            <CardDescription className="text-sm">
               Thông tin này sẽ hiển thị trên hồ sơ của bạn
             </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {/* Avatar */}
-            <div className="flex items-center gap-6">
-              <div className="relative group">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src={previewAvatar} />
-                  <AvatarFallback>{name?.[0]}</AvatarFallback>
+            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
+              <div className="group relative">
+                <Avatar className="size-20 sm:size-24">
+                  <AvatarImage src={previewAvatar} alt={name || "Avatar"} />
+                  <AvatarFallback>{name?.[0]?.toUpperCase()}</AvatarFallback>
                 </Avatar>
 
                 <button
                   type="button"
                   onClick={() => avatarInputRef.current?.click()}
-                  className="absolute inset-0 hidden group-hover:flex items-center justify-center rounded-full bg-black/40 text-white"
+                  aria-label="Thay đổi ảnh đại diện"
+                  className="absolute inset-0 hidden items-center justify-center rounded-full bg-foreground/40 text-background transition-opacity duration-base group-hover:flex group-focus-within:flex"
                 >
-                  <Upload className="h-5 w-5" />
+                  <Upload aria-hidden className="size-5" />
                 </button>
 
                 <input
@@ -79,44 +80,61 @@ export default function UpdateProfileForm() {
                   type="file"
                   accept="image/*"
                   className="hidden"
+                  aria-label="Tải ảnh đại diện"
                   onChange={(e) => setFile(e.target.files?.[0] || null)}
                 />
               </div>
 
-              <p className="text-xs text-muted-foreground">
-                JPG, PNG • Tối đa 2MB
-              </p>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">
+                  Ảnh đại diện
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  JPG, PNG • Tối đa 2MB
+                </p>
+              </div>
             </div>
 
-            {/* Name */}
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
-                <FormItem>
-                  <Label>Tên hiển thị</Label>
-                  <Input {...field} />
+                <FormItem className="space-y-2">
+                  <Label htmlFor="profile-name">Tên hiển thị</Label>
+                  <Input id="profile-name" className="h-11" {...field} />
                   <FormMessage />
                 </FormItem>
               )}
             />
-            {/* Name */}
+
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
-                <FormItem>
-                  <Label>Email</Label>
-                  <Input {...field} />
+                <FormItem className="space-y-2">
+                  <Label htmlFor="profile-email">Email</Label>
+                  <Input
+                    id="profile-email"
+                    type="email"
+                    className="h-11"
+                    {...field}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" type="reset">
-                Hủy
+
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button
+                variant="outline"
+                type="reset"
+                className="h-11 sm:w-auto"
+              >
+                Huỷ
               </Button>
-              <Button type="submit">Lưu thay đổi</Button>
+              <Button type="submit" className="h-11 sm:w-auto">
+                Lưu thay đổi
+              </Button>
             </div>
           </CardContent>
         </Card>

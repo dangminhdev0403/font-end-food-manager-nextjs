@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { useSessionStore } from "@/lib/stores/session.store";
 import { motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
@@ -19,58 +21,72 @@ export default function ScanTableExistError() {
   useEffect(() => {
     if (!hasHydrated) return;
     startCountdown();
-  }, [startCountdown]);
+  }, [startCountdown, hasHydrated]);
 
   useEffect(() => {
     if (count === 0) {
       router.replace(`/tables/detail/${tableId}`);
     }
   }, [count, router, tableId]);
+
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-[#1a120c] overflow-hidden">
+    <main className="flex min-h-dvh items-center justify-center bg-background px-4 py-6 text-foreground sm:px-6 sm:py-8">
       <motion.div
         initial={{ opacity: 0, filter: "blur(8px)" }}
         animate={{ opacity: 1, filter: "blur(0px)" }}
-        transition={{ duration: 0.6 }}
-        className="max-w-md w-full text-center px-6"
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-md"
+        role="alert"
+        aria-live="assertive"
       >
-        <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 rounded-full flex items-center justify-center bg-[#f08a00]/10 border border-[#f08a00]/30">
-            <AlertTriangle size={36} className="text-[#f08a00]" />
-          </div>
-        </div>
+        <Card>
+          <CardContent className="space-y-4 p-6 text-center sm:p-8">
+            <div className="flex justify-center">
+              <div className="flex size-16 items-center justify-center rounded-full border border-destructive/30 bg-destructive/10 text-destructive sm:size-20">
+                <AlertTriangle aria-hidden className="size-8 sm:size-9" />
+              </div>
+            </div>
 
-        <h2 className="text-3xl font-serif text-[#f08a00] mb-4">
-          Bạn đang được phục vụ tại bàn {tableName}
-        </h2>
+            <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+              Bạn đang được phục vụ tại bàn {tableName}
+            </h2>
 
-        <p className="text-[#c9b8a6] mb-6">
-          Có vẻ bạn đã quét mã QR của một bàn trước đó. Để tránh nhầm lẫn trong
-          quá trình gọi món, vui lòng quay lại bàn bạn đang sử dụng.
-        </p>
+            <p className="text-sm text-muted-foreground sm:text-base">
+              Có vẻ bạn đã quét mã QR của một bàn trước đó. Để tránh nhầm lẫn
+              trong quá trình gọi món, vui lòng quay lại bàn bạn đang sử dụng.
+            </p>
 
-        <button
-          onClick={() => router.replace(`/tables/detail/${tableId}`)}
-          className="px-6 py-2 rounded-lg bg-[#f08a00] text-black font-semibold hover:opacity-90 transition"
-        >
-          Quay lại bàn {tableName}
-        </button>
+            <div className="flex justify-center">
+              <Button
+                onClick={() => router.replace(`/tables/detail/${tableId}`)}
+                className="h-11"
+              >
+                Quay lại bàn {tableName}
+              </Button>
+            </div>
 
-        <p className="text-sm text-[#c9b8a6] mt-4">
-          Tự động quay lại sau{" "}
-          <span className="text-[#f08a00] font-semibold">{count}s</span>
-        </p>
+            <p className="text-sm text-muted-foreground">
+              Tự động quay lại sau{" "}
+              <span className="font-semibold text-destructive tabular-nums">
+                {count}s
+              </span>
+            </p>
 
-        <div className="mt-4 h-[2px] w-full bg-[#f08a00]/20 overflow-hidden rounded">
-          <motion.div
-            key={count}
-            initial={{ width: "100%" }}
-            animate={{ width: `${(count / 5) * 100}%` }}
-            transition={{ duration: 0.5 }}
-            className="h-full bg-[#f08a00]"
-          />
-        </div>
+            <div
+              className="h-[2px] w-full overflow-hidden rounded-full bg-destructive/20"
+              aria-hidden
+            >
+              <motion.div
+                key={count}
+                initial={{ width: "100%" }}
+                animate={{ width: `${(count / 30) * 100}%` }}
+                transition={{ duration: 0.5 }}
+                className="h-full bg-destructive"
+              />
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
-    </div>
+    </main>
   );
 }

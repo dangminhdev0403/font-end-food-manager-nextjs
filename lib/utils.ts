@@ -12,6 +12,14 @@ export function cn(...inputs: ClassValue[]) {
 }
 export const privatePaths = ["/manage", "/profile", "/admin"];
 
+export const isSafeInternalCallbackUrl = (value?: string | null) => {
+  if (!value) return false;
+  if (!value.startsWith("/")) return false;
+  if (value.startsWith("//")) return false;
+
+  return true;
+};
+
 //! helper
 export const getVietnameseDishStatus = (
   status: (typeof DishStatus)[keyof typeof DishStatus],

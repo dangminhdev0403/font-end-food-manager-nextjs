@@ -18,54 +18,56 @@ export default function Layout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex min-h-screen w-full flex-col relative">
-      <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
-        <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
-          <Link
-            href="#"
-            className="flex items-center gap-2 text-lg font-semibold md:text-base"
-          >
-            <Package2 className="h-6 w-6" />
-            <span className="sr-only">Big boy</span>
-          </Link>
-          <NavItems className="text-muted-foreground transition-colors hover:text-foreground flex-shrink-0" />
-        </nav>
+    <div className="relative flex min-h-dvh w-full flex-col bg-background text-foreground">
+      <header className="sticky top-0 z-sticky flex h-14 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur sm:h-16 sm:px-6 lg:px-8">
         <Sheet>
-          {/* <SheetTitle>Menu</SheetTitle> */}
-
           <SheetTrigger asChild>
             <Button
               variant="outline"
-              size="default"
-              className="shrink-0 md:hidden"
+              size="icon"
+              className="size-10 shrink-0 md:hidden"
+              aria-label="Mở menu điều hướng"
             >
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle navigation menu</span>
+              <Menu className="size-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left">
+          <SheetContent side="left" className="w-3/4 max-w-xs sm:max-w-sm">
             <SheetHeader>
               <SheetTitle>{envConfig.NEXT_PUBLIC_NAME_RESTARANT}</SheetTitle>
             </SheetHeader>
-            <nav className="grid gap-6 text-lg font-medium">
-              <Link
-                href="#"
-                className="flex items-center gap-2 text-lg font-semibold"
-              >
-                <span className="sr-only">
-                  {envConfig.NEXT_PUBLIC_NAME_RESTARANT}
-                </span>
-              </Link>
-
-              <NavItems className="text-muted-foreground transition-colors hover:text-foreground" />
+            <nav
+              aria-label="Menu chính (mobile)"
+              className="mt-2 grid gap-2 p-4 text-base font-medium"
+            >
+              <NavItems className="block min-h-10 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground" />
             </nav>
           </SheetContent>
         </Sheet>
-        <div className="ml-auto">
+
+        <Link
+          href="/"
+          className="flex items-center gap-2 text-base font-semibold text-foreground"
+          aria-label="Trang chủ"
+        >
+          <Package2 className="size-5" />
+          <span className="hidden sm:inline">
+            {envConfig.NEXT_PUBLIC_NAME_RESTARANT}
+          </span>
+        </Link>
+
+        <nav
+          aria-label="Menu chính"
+          className="ml-6 hidden flex-1 items-center gap-5 text-sm font-medium md:flex lg:gap-6"
+        >
+          <NavItems className="text-muted-foreground transition-colors hover:text-foreground" />
+        </nav>
+
+        <div className="ml-auto flex items-center gap-2">
           <DarkModeToggle />
         </div>
       </header>
-      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+
+      <main className="flex flex-1 flex-col gap-4 p-4 sm:p-6 md:gap-6 lg:p-8">
         {children}
       </main>
     </div>

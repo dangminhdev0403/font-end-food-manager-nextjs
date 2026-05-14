@@ -1,7 +1,9 @@
 "use client";
 
 import { OrderStatus } from "@/components/orders/order-filter";
+import { Card, CardContent } from "@/components/ui/card";
 import { Order } from "@/services/internal/admin/orders/order.types";
+import { Inbox } from "lucide-react";
 import { OrderCard } from "./order-card";
 
 interface OrdersListProps {
@@ -12,22 +14,22 @@ interface OrdersListProps {
 export function OrdersList({ orders, onStatusChange }: OrdersListProps) {
   if (orders.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-gray-700 bg-[#1f1f1f] py-12">
-        <div className="text-center">
-          <p className="mb-2 text-lg font-semibold text-white">
+      <Card>
+        <CardContent className="flex flex-col items-center gap-2 p-8 text-center sm:p-12">
+          <Inbox aria-hidden className="size-10 text-muted-foreground" />
+          <p className="text-base font-semibold text-foreground sm:text-lg">
             Không có đơn hàng
           </p>
-
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-muted-foreground">
             Không tìm thấy đơn hàng phù hợp với tiêu chí tìm kiếm
           </p>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {orders.map((order) => (
         <OrderCard
           key={order.id}

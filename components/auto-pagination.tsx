@@ -45,8 +45,8 @@ export default function AutoPagination({
   pageSize,
   pathname = '/',
   isLink = true,
-  onClick = (pageNumber) => {}
-}: Props) {
+  onClick = (_pageNumber) => {}
+}: Readonly<Props>) {
   const renderPagination = () => {
     let dotAfter = false
     let dotBefore = false
@@ -121,7 +121,9 @@ export default function AutoPagination({
                   onClick(pageNumber)
                 }}
                 variant={pageNumber === page ? 'outline' : 'ghost'}
-                className='w-9 h-9 p-0'
+                aria-current={pageNumber === page ? 'page' : undefined}
+                aria-label={`Trang ${pageNumber}`}
+                className='size-10 p-0'
               >
                 {pageNumber}
               </Button>
@@ -155,13 +157,15 @@ export default function AutoPagination({
           {!isLink && (
             <Button
               disabled={page === 1}
-              className='h-9 p-0 px-2'
+              className='h-10 gap-1 px-3'
               variant={'ghost'}
               onClick={() => {
                 onClick(page - 1)
               }}
+              aria-label='Trang trước'
             >
-              <ChevronLeft className='w-5 h-5' /> Previous
+              <ChevronLeft aria-hidden className='size-4' />
+              <span className='hidden sm:inline'>Previous</span>
             </Button>
           )}
         </PaginationItem>
@@ -189,13 +193,15 @@ export default function AutoPagination({
           {!isLink && (
             <Button
               disabled={page === pageSize}
-              className='h-9 p-0 px-2'
+              className='h-10 gap-1 px-3'
               variant={'ghost'}
               onClick={() => {
                 onClick(page + 1)
               }}
+              aria-label='Trang sau'
             >
-              Next <ChevronRight className='w-5 h-5' />
+              <span className='hidden sm:inline'>Next</span>
+              <ChevronRight aria-hidden className='size-4' />
             </Button>
           )}
         </PaginationItem>

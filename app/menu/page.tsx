@@ -7,7 +7,7 @@ interface Props {
     page?: string;
   }>;
 }
-export default async function MenuPage({ searchParams }: Props) {
+export default async function MenuPage({ searchParams }: Readonly<Props>) {
   const params = await searchParams; //
   const page = Number(params.page || 1);
   try {
@@ -22,6 +22,12 @@ export default async function MenuPage({ searchParams }: Props) {
     return <MenuClient meta={meta} listProduct={listProduct} />;
   } catch (error) {
     logger.error({ error }, "Error ISR fetching products");
-    return <div className="p-8">Lỗi khi tải sản phẩm</div>;
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-background px-4 py-6 text-foreground sm:px-6">
+        <p className="text-base text-destructive sm:text-lg" role="alert">
+          Lỗi khi tải sản phẩm
+        </p>
+      </div>
+    );
   }
 }

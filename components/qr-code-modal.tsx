@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -26,7 +28,6 @@ export default function QRCodeModal({
   const [qrValue, setQrValue] = useState("");
   const [copied, setCopied] = useState(false);
 
-  // Tránh hydration mismatch
   useEffect(() => {
     setQrValue(`${globalThis.location.origin}/tables/scan/${tableToken}`);
   }, [tableToken]);
@@ -41,9 +42,9 @@ export default function QRCodeModal({
     link.click();
   };
 
-  const handleCopyLink = async (qrString: string) => {
+  const handleCopyLink = async () => {
     if (!qrValue) return;
-    await navigator.clipboard.writeText(qrString);
+    await navigator.clipboard.writeText(qrValue);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -54,59 +55,61 @@ export default function QRCodeModal({
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center">Mã QR - {tableName}</DialogTitle>
+          <DialogTitle className="text-center">
+            Mã QR — {tableName}
+          </DialogTitle>
+          <DialogDescription className="text-center">
+            Khách quét mã để xem menu và đặt món trực tiếp.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col items-center gap-6 py-4">
-          {/* QR Section */}
+        <div className="flex flex-col items-center gap-5 py-2">
           <div
             ref={qrRef}
-            className="bg-white p-6 rounded-2xl shadow-md border"
+            className="rounded-md border border-border bg-white p-4 shadow-sm"
           >
             <QRCodeCanvas value={qrValue} size={220} level="Q" />
           </div>
 
-          {/* Link Display */}
           <div className="w-full space-y-2">
-            <p className="text-xs text-muted-foreground text-center">
+            <p className="text-center text-xs text-muted-foreground">
               Link truy cập
             </p>
-            <div className="bg-muted rounded-md px-3 py-2 text-xs font-mono break-all text-center">
+            <p className="break-all rounded-md bg-muted px-3 py-2 text-center font-mono text-xs text-foreground">
               {qrValue}
-            </div>
+            </p>
           </div>
-
-          {/* Actions */}
-          <div className="flex gap-3 w-full">
-            <Button onClick={handleDownload} className="flex-1 gap-2">
-              <Download className="h-4 w-4" />
-              Tải xuống
-            </Button>
-
-            <Button
-              onClick={() => handleCopyLink(qrValue)}
-              variant="outline"
-              disabled={copied}
-              className="flex-1 gap-2"
-            >
-              {copied ? (
-                <>
-                  <Check className="h-4 w-4" />
-                  Đã sao chép
-                </>
-              ) : (
-                <>
-                  <Copy className="h-4 w-4" />
-                  Sao chép
-                </>
-              )}
-            </Button>
-          </div>
-
-          <p className="text-[11px] text-muted-foreground text-center">
-            Khách quét mã để xem menu và đặt món trực tiếp.
-          </p>
         </div>
+
+        <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleCopyLink}
+            disabled={copied}
+            className="h-11 flex-1 gap-2"
+          >
+            {copied ? (
+              <>
+                <Check className="size-4" aria-hidden />
+                Đã sao chép
+              </>
+            ) : (
+              <>
+                <Copy className="size-4" aria-hidden />
+                Sao chép
+              </>
+            )}
+          </Button>
+          <Button
+            type="button"
+            onClick={handleDownload}
+            className="h-11 flex-1 gap-2"
+          >
+            <Download className="size-4" aria-hidden />
+            Tải xuống
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

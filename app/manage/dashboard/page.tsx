@@ -2,17 +2,16 @@ import DashboardMain from "@/app/manage/dashboard/dashboard-main";
 
 export default async function Dashboard() {
   return (
-    <main className="min-h-screen w-full flex-1 bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-      <div className="px-6 sm:px-6 py-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+    <main className="flex-1 bg-background">
+      <div className="container mx-auto space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <header className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             Dashboard
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-sm text-muted-foreground sm:text-base">
             Phân tích nhanh hiệu quả kinh doanh
           </p>
-        </div>
+        </header>
 
         <DashboardMain />
       </div>

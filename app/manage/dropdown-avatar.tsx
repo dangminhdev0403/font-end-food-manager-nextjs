@@ -1,8 +1,7 @@
 "use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { signOut } from "next-auth/react";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import authClient from "@/services/internal/auth/auth.client";
 import type { Session } from "next-auth";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -40,9 +40,10 @@ export default function DropdownAvatar({ user }: UserProps) {
         <Button
           variant="outline"
           size="icon"
-          className="overflow-hidden rounded-full"
+          className="size-10 overflow-hidden rounded-full"
+          aria-label="Tài khoản của tôi"
         >
-          <Avatar>
+          <Avatar className="size-10">
             <AvatarImage
               src={profile?.avatar ?? undefined}
               alt={profile?.name}
@@ -53,21 +54,24 @@ export default function DropdownAvatar({ user }: UserProps) {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>{profile?.name}</DropdownMenuLabel>
+      <DropdownMenuContent align="end" className="min-w-44">
+        <DropdownMenuLabel className="truncate">
+          {profile?.name}
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href={"/manage/setting"} className="cursor-pointer">
-            Cài đặt
-          </Link>
+          <Link href="/manage/setting">Cài đặt</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href={"/manage/setting"} className="cursor-pointer">
-            Hỗ trợ
-          </Link>
+          <Link href="/manage/setting">Hỗ trợ</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={handleLogout}
+          className="text-destructive focus:text-destructive"
+        >
+          Đăng xuất
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

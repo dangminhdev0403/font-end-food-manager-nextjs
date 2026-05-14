@@ -1,12 +1,14 @@
 "use client";
 
 import LuxuryLoading from "@/components/loading";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { useGuestCart } from "@/lib/hooks/useGuestCart";
 import { logger } from "@/lib/logger";
 import { useSessionStore } from "@/lib/stores/session.store";
+import { cn, formatCurrency } from "@/lib/utils";
 import {
   useGuestGetListOrderQuery,
   useGuestUpdateOrderMutation,
@@ -15,7 +17,6 @@ import { useGetListProductClientQuery } from "@/queries/products/useProductClien
 import { Table } from "@/services/internal/customers/customer.types";
 import { ProductItem } from "@/services/internal/products/product.types";
 import { ArrowLeft, Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
-
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -26,7 +27,7 @@ type Props = {
   table: Table;
 };
 
-export default function TableOrderingPage({ table }: Props) {
+export default function TableOrderingPage({ table }: Readonly<Props>) {
   const router = useRouter();
   const { data, status } = useSession();
 
@@ -63,17 +64,12 @@ export default function TableOrderingPage({ table }: Props) {
   const cartContainerRef = useRef<HTMLDivElement>(null);
   const mobileCartBarRef = useRef<HTMLDivElement>(null);
 
-  /* AUTH CHECK */
-
-  // TABLE REDIRECT
   useEffect(() => {
     if (!hasHydrated) return;
     if (tableId && tableId !== Number(table.id)) {
       router.replace(`/tables/detail/${tableId}`);
     }
   }, [tableId, table.id, router, hasHydrated]);
-
-  /* ADD TO CART */
 
   const addToCart = useCallback(
     (item: ProductItem) => {
@@ -117,7 +113,6 @@ export default function TableOrderingPage({ table }: Props) {
     [setCartItems],
   );
   logger.info(cartItems);
-  /* UPDATE QUANTITY */
 
   const updateQuantity = useCallback(
     (id: number, quantity: number) => {
@@ -133,8 +128,6 @@ export default function TableOrderingPage({ table }: Props) {
     [setCartItems],
   );
 
-  /* REMOVE */
-
   const removeFromCart = useCallback(
     (id: number) => {
       setCartItems((prev) =>
@@ -149,8 +142,6 @@ export default function TableOrderingPage({ table }: Props) {
     0,
   );
 
-  /* SCROLL TO MOBILE CART */
-
   const scrollToCart = () => {
     if (mobileCartBarRef.current) {
       mobileCartBarRef.current.scrollIntoView({
@@ -159,8 +150,6 @@ export default function TableOrderingPage({ table }: Props) {
       });
     }
   };
-
-  /* ORDER */
 
   const handleOrder = async () => {
     if (isPending) return;
@@ -195,275 +184,313 @@ export default function TableOrderingPage({ table }: Props) {
     }
   };
 
-  // AUTH GUARD
-
   if (isLoading || isLoadingOrder || status === "loading" || !hasHydrated) {
-    return <LuxuryLoading text="Đang tải Thực Đơn" />;
+    return <LuxuryLoading text="Đang tải thực đơn" />;
   }
   if (!data?.user && !guestToken) {
     return notFound();
   }
   return (
-    <div className="min-h-screen bg-[#1a120c] text-[#f5f1e8]">
-      {/* HEADER */}
+    <div className="relative min-h-dvh overflow-hidden bg-background text-foreground">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.14),transparent_42%),radial-gradient(circle_at_85%_20%,rgba(249,115,22,0.12),transparent_38%),linear-gradient(to_bottom,rgba(10,10,10,0.96),rgba(6,6,6,1))]"
+      />
 
-      <div className="sticky top-0 z-40 bg-[#140e09]/90 border-b border-[#f08a00]/20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4">
-          {/* DESKTOP HEADER */}
-          <div className="hidden sm:flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-sticky border-b border-amber-900/30 bg-background/75 backdrop-blur-xl">
+        <div className="container mx-auto px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+          <div className="relative flex flex-col gap-3 overflow-hidden rounded-2xl border border-amber-900/30 bg-card/40 p-4 shadow-xl sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-5">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 bg-linear-to-r from-amber-500/10 via-transparent to-orange-500/10"
+            />
+
             <Link
-              href="/table"
-              className="flex items-center gap-2 hover:opacity-70"
+              href="/"
+              className="relative flex min-h-10 w-fit items-center gap-2 rounded-md text-amber-50 transition-all duration-base hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label={`Quay lại - Bàn ${table.name}`}
             >
-              <ArrowLeft className="w-5 h-5 text-[#f08a00]" />
-              <span className="text-lg font-serif font-bold">
+              <ArrowLeft aria-hidden className="size-5 text-amber-300" />
+              <span className="text-base font-bold sm:text-lg">
                 Bàn {table.name}
               </span>
             </Link>
 
-            <div className="text-center">
-              <p className="text-xs text-[#c9b8a6]">Tổng tiền</p>
-              <p className="text-lg font-bold text-[#f08a00]">
-                {totalAmount.toLocaleString()}đ
-              </p>
-            </div>
-
-            <span className="bg-[#f08a00] text-black px-3 py-1 rounded-full text-sm font-medium flex justify-center align-center">
-              {cartItems.length} món
-            </span>
-          </div>
-
-          {/* MOBILE HEADER */}
-          <div className="sm:hidden space-y-2">
-            <Link
-              href="/table"
-              className="flex items-center gap-2 hover:opacity-70 w-fit"
-            >
-              <ArrowLeft className="w-5 h-5 text-[#f08a00]" />
-              <span className="text-base font-serif font-bold">
-                Bàn {table.name}
-              </span>
-            </Link>
-
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-xs text-[#c9b8a6]">Tổng tiền</p>
-                <p className="text-xl font-bold text-[#f08a00]">
-                  {totalAmount.toLocaleString()}đ
+            <div className="relative flex items-end justify-between gap-3 sm:items-center">
+              <div className="text-left sm:text-center">
+                <p className="text-xs uppercase tracking-[0.2em] text-amber-100/70">
+                  Tổng tiền
+                </p>
+                <p className="text-lg font-bold tabular-nums text-amber-300 sm:text-xl">
+                  {formatCurrency(totalAmount)}
                 </p>
               </div>
 
-              <span className="bg-[#f08a00] text-black px-3 py-1 rounded-full text-xs font-medium">
+              <Badge className="whitespace-nowrap border border-amber-700/30 bg-amber-500/10 px-2.5 text-xs text-amber-100 sm:text-sm">
                 {cartItems.length} món
-              </span>
+              </Badge>
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* MAIN */}
-
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 xl:grid-cols-4 gap-6">
-        {/* MENU */}
-
-        <div className="xl:col-span-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="relative container mx-auto grid grid-cols-1 gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:grid-cols-4">
+        <section
+          aria-label="Thực đơn"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:col-span-3"
+        >
           {products.map((item) => (
             <Card
               key={item.id}
-              className="bg-[#2a1a12] border border-[#f08a00]/20"
+              className="group overflow-hidden border-amber-900/30 bg-card/55 shadow-lg transition-all duration-base hover:-translate-y-0.5 hover:border-amber-700/45 hover:shadow-xl"
             >
-              <div className="relative h-44 sm:h-40">
+              <div className="relative aspect-4/3 w-full overflow-hidden bg-muted">
                 <Image
                   src={item.images?.[0] || "/placeholder.png"}
-                  alt={item.name || ""}
+                  alt={item.name || "Sản phẩm"}
                   fill
-                  className="object-cover"
+                  sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                  className="max-w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div
+                  aria-hidden
+                  className="absolute inset-0 bg-linear-to-t from-background/70 via-background/10 to-transparent"
                 />
               </div>
 
-              <div className="p-4">
-                <h3 className="font-semibold mb-1">{item.name}</h3>
+              <CardContent className="space-y-3 bg-linear-to-r from-amber-950/20 to-orange-950/10 p-4">
+                <h3 className="line-clamp-2 text-sm font-semibold text-foreground sm:text-base">
+                  {item.name}
+                </h3>
 
-                <p className="text-[#f08a00] font-bold mb-3">
-                  {item.virtualPrice.toLocaleString()}đ
+                <p className="text-base font-bold tabular-nums text-amber-300 sm:text-lg">
+                  {formatCurrency(item.virtualPrice)}
                 </p>
 
                 <Button
                   onClick={() => addToCart(item)}
-                  className="w-full active:scale-95 transition"
-                  variant="food"
+                  className="h-11 w-full border border-amber-700/40 bg-linear-to-r from-amber-700/85 to-orange-700/85 text-amber-50 shadow-md transition-all duration-base hover:from-amber-600 hover:to-orange-600 hover:shadow-lg"
+                  variant="default"
+                  aria-label={`Thêm ${item.name} vào giỏ hàng`}
                 >
+                  <Plus aria-hidden className="size-4" />
                   Thêm vào giỏ
                 </Button>
-              </div>
+              </CardContent>
             </Card>
           ))}
-        </div>
+        </section>
 
-        {/* CART DESKTOP */}
+        <aside className="hidden xl:block" aria-label="Giỏ hàng">
+          <Card className="sticky top-24 overflow-hidden border-amber-900/30 bg-card/55 shadow-xl backdrop-blur-md">
+            <CardContent className="space-y-4 p-6">
+              <h2 className="flex items-center gap-2 text-base font-semibold text-amber-100 sm:text-lg">
+                <ShoppingCart aria-hidden className="size-5 text-amber-300" />
+                Giỏ hàng
+              </h2>
 
-        <div className="hidden xl:block">
-          <div className="sticky top-28 bg-[#2a1a12] p-6 rounded-xl">
-            <h2 className="flex items-center gap-2 mb-6">
-              <ShoppingCart size={20} />
-              Giỏ hàng
-            </h2>
-
-            <div
-              ref={cartContainerRef}
-              className="space-y-4 mb-6 max-h-[420px] overflow-y-auto pr-2"
-            >
-              {cartItems.map((item) => (
-                <div
-                  key={item.productId}
-                  className={`p-3 rounded-lg ${
-                    lastAddedId === item.productId
-                      ? "bg-[#f08a00]/20 ring-2 ring-[#f08a00]"
-                      : "bg-[#1f140e]"
-                  }`}
-                >
-                  <div className="flex justify-between">
-                    <span>{item.name}</span>
-                    {!item.isPersisted && (
-                      <button onClick={() => removeFromCart(item.productId)}>
-                        <Trash2 size={16} className="text-red-500" />
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="flex justify-between mt-2">
-                    <span className="text-[#f08a00]">
-                      {(item.price * item.quantity).toLocaleString()}đ
-                    </span>
-
-                    <div className="flex gap-2 items-center">
-                      {(item.isPersisted
-                        ? item.quantity > item.minQuantity
-                        : item.quantity > 1) && (
-                        <button
-                          onClick={() =>
-                            updateQuantity(item.productId, item.quantity - 1)
-                          }
-                        >
-                          <Minus size={16} />
-                        </button>
+              <div
+                ref={cartContainerRef}
+                className="max-h-[60dvh] space-y-3 overflow-y-auto pr-1"
+              >
+                {cartItems.length === 0 ? (
+                  <p className="py-6 text-center text-sm text-muted-foreground">
+                    Chưa có món nào
+                  </p>
+                ) : (
+                  cartItems.map((item) => (
+                    <div
+                      key={item.productId}
+                      className={cn(
+                        "rounded-xl border p-3 transition-all duration-base",
+                        lastAddedId === item.productId
+                          ? "border-amber-500/70 bg-amber-500/15 shadow-[0_0_14px_rgba(251,191,36,0.3)]"
+                          : "border-amber-900/30 bg-linear-to-r from-amber-950/25 to-orange-950/10 hover:border-amber-700/45",
                       )}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-sm font-medium text-foreground">
+                          {item.name}
+                        </span>
+                        {!item.isPersisted && (
+                          <button
+                            type="button"
+                            onClick={() => removeFromCart(item.productId)}
+                            aria-label={`Xoá ${item.name}`}
+                            className="flex size-8 items-center justify-center rounded-md text-destructive transition-colors duration-base hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <Trash2 aria-hidden className="size-4" />
+                          </button>
+                        )}
+                      </div>
 
-                      <span>{item.quantity}</span>
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="text-sm font-semibold tabular-nums text-amber-300">
+                          {formatCurrency(item.price * item.quantity)}
+                        </span>
 
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.productId, item.quantity + 1)
-                        }
-                      >
-                        <Plus size={16} />
-                      </button>
+                        <div className="flex items-center gap-2">
+                          {(item.isPersisted
+                            ? item.quantity > item.minQuantity
+                            : item.quantity > 1) && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateQuantity(
+                                  item.productId,
+                                  item.quantity - 1,
+                                )
+                              }
+                              aria-label="Giảm số lượng"
+                              className="flex size-8 items-center justify-center rounded-md border border-amber-900/35 bg-card/80 transition-colors duration-base hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                              <Minus aria-hidden className="size-4" />
+                            </button>
+                          )}
+
+                          <span
+                            className="min-w-6 text-center text-sm tabular-nums text-amber-50"
+                            aria-label={`Số lượng ${item.quantity}`}
+                          >
+                            {item.quantity}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateQuantity(item.productId, item.quantity + 1)
+                            }
+                            aria-label="Tăng số lượng"
+                            className="flex size-8 items-center justify-center rounded-md border border-amber-900/35 bg-card/80 transition-colors duration-base hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <Plus aria-hidden className="size-4" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  ))
+                )}
+              </div>
 
-            <Button
-              onClick={handleOrder}
-              className="w-full bg-[#f08a00] text-black"
-            >
-              Đặt món
-            </Button>
-          </div>
-        </div>
+              <Button
+                onClick={handleOrder}
+                disabled={isPending || cartItems.length === 0}
+                className="h-11 w-full border border-amber-700/40 bg-linear-to-r from-amber-700/85 to-orange-700/85 text-amber-50 shadow-md transition-all duration-base hover:from-amber-600 hover:to-orange-600 hover:shadow-lg"
+              >
+                Đặt món
+              </Button>
+            </CardContent>
+          </Card>
+        </aside>
       </div>
-
-      {/* MOBILE CART BAR */}
 
       {cartItems.length > 0 && (
         <div
           ref={mobileCartBarRef}
-          className="xl:hidden w-full p-4 bg-[#1a120c] border-t border-[#f08a00]/20 mt-12 mb-20"
+          className="container mx-auto mb-20 mt-12 px-4 sm:px-6 lg:px-8 xl:hidden"
         >
-          <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
-            {cartItems.map((item) => (
-              <div
-                key={item.productId}
-                className={`p-3 rounded-lg ${
-                  lastAddedId === item.productId
-                    ? "bg-[#f08a00]/20 ring-2 ring-[#f08a00]"
-                    : "bg-[#1f140e]"
-                }`}
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <span className="ext-orange-300 font-semibold">
-                      {item.name}
-                    </span>
-                    <p className="text-[#f08a00] font-bold text-sm">
-                      {(item.price * item.quantity).toLocaleString()}đ
-                    </p>
-                  </div>
-
-                  {/* chỉ hiện delete khi = minQuantity */}
-                  {item.quantity === item.minQuantity && (
-                    <button onClick={() => removeFromCart(item.productId)}>
-                      <Trash2 size={14} className="text-red-500" />
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex gap-2 items-center justify-end mt-2">
-                  {/* chỉ cho giảm khi > minQuantity */}
-                  {item.quantity > item.minQuantity && (
-                    <button
-                      onClick={() =>
-                        updateQuantity(item.productId, item.quantity - 1)
-                      }
-                    >
-                      <Minus size={14} />
-                    </button>
-                  )}
-
-                  <span className="text-sm">{item.quantity}</span>
-
-                  <button
-                    onClick={() =>
-                      updateQuantity(item.productId, item.quantity + 1)
-                    }
+          <Card className="overflow-hidden border-amber-900/30 bg-card/55 shadow-xl backdrop-blur-md">
+            <CardContent className="space-y-4 p-4 sm:p-6">
+              <div className="max-h-64 space-y-3 overflow-y-auto pr-1">
+                {cartItems.map((item) => (
+                  <div
+                    key={item.productId}
+                    className={cn(
+                      "rounded-xl border p-3 transition-all duration-base",
+                      lastAddedId === item.productId
+                        ? "border-amber-500/70 bg-amber-500/15 shadow-[0_0_14px_rgba(251,191,36,0.3)]"
+                        : "border-amber-900/30 bg-linear-to-r from-amber-950/25 to-orange-950/10",
+                    )}
                   >
-                    <Plus size={14} />
-                  </button>
-                </div>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <span className="text-sm font-semibold text-foreground">
+                          {item.name}
+                        </span>
+                        <p className="mt-1 text-sm font-bold tabular-nums text-amber-300">
+                          {formatCurrency(item.price * item.quantity)}
+                        </p>
+                      </div>
+
+                      {item.quantity === item.minQuantity && (
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(item.productId)}
+                          aria-label={`Xoá ${item.name}`}
+                          className="flex size-8 items-center justify-center rounded-md text-destructive transition-colors duration-base hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <Trash2 aria-hidden className="size-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="mt-2 flex items-center justify-end gap-2">
+                      {item.quantity > item.minQuantity && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateQuantity(item.productId, item.quantity - 1)
+                          }
+                          aria-label="Giảm số lượng"
+                          className="flex size-8 items-center justify-center rounded-md border border-amber-900/35 bg-card/80 transition-colors duration-base hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <Minus aria-hidden className="size-4" />
+                        </button>
+                      )}
+
+                      <span
+                        className="min-w-6 text-center text-sm tabular-nums text-amber-50"
+                        aria-label={`Số lượng ${item.quantity}`}
+                      >
+                        {item.quantity}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateQuantity(item.productId, item.quantity + 1)
+                        }
+                        aria-label="Tăng số lượng"
+                        className="flex size-8 items-center justify-center rounded-md border border-amber-900/35 bg-card/80 transition-colors duration-base hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <Plus aria-hidden className="size-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          <div className="mb-3 pb-3 border-t border-[#f08a00]/20">
-            <p className="text-xs text-[#c9b8a6]">Tổng tiền</p>
-            <p className="text-lg font-bold text-[#f08a00]">
-              {totalAmount.toLocaleString()}đ
-            </p>
-          </div>
+              <div className="border-t border-amber-900/30 pt-3">
+                <p className="text-xs uppercase tracking-[0.2em] text-amber-100/70">
+                  Tổng tiền
+                </p>
+                <p className="text-lg font-bold tabular-nums text-amber-300">
+                  {formatCurrency(totalAmount)}
+                </p>
+              </div>
 
-          <Button
-            onClick={handleOrder}
-            disabled={isPending}
-            className="w-full bg-[#f08a00] text-black"
-          >
-            Đặt món
-          </Button>
+              <Button
+                onClick={handleOrder}
+                disabled={isPending}
+                className="h-11 w-full border border-amber-700/40 bg-linear-to-r from-amber-700/85 to-orange-700/85 text-amber-50 shadow-md transition-all duration-base hover:from-amber-600 hover:to-orange-600 hover:shadow-lg"
+              >
+                Đặt món
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       )}
 
-      {/* FLOATING CHECKOUT BUTTON MOBILE */}
-
       {cartItems.length > 0 && (
         <button
+          type="button"
           onClick={scrollToCart}
           disabled={isPending}
-          className="xl:hidden fixed bottom-8 right-6 z-40 w-16 h-16 rounded-full bg-gradient-to-br from-[#f08a00] to-[#e07a00] text-black shadow-2xl hover:shadow-[0_0_30px_rgba(240,138,0,0.6)] active:scale-95 transition-all duration-300 flex items-center justify-center font-bold text-sm"
+          aria-label="Cuộn xuống giỏ hàng"
+          className="fixed bottom-6 right-4 z-sticky flex size-14 flex-col items-center justify-center rounded-full border border-amber-700/50 bg-linear-to-br from-amber-600 to-orange-600 text-amber-50 shadow-[0_12px_30px_rgba(251,146,60,0.35)] transition-transform duration-base hover:shadow-[0_16px_36px_rgba(251,146,60,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95 sm:bottom-8 sm:right-6 sm:size-16 xl:hidden"
         >
-          <div className="flex flex-col items-center gap-0.5">
-            <span className="text-xs leading-none">Đặt</span>
-            <span className="text-xs leading-none">món</span>
-          </div>
+          <span className="text-xs font-bold leading-none">Đặt</span>
+          <span className="mt-0.5 text-xs font-bold leading-none">món</span>
         </button>
       )}
     </div>

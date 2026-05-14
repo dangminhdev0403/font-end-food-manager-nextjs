@@ -14,6 +14,12 @@ export default async function Home() {
     return <ListProduct listProduct={listProduct} />;
   } catch (error) {
     logger.error({ error }, " Error ISR fetching products:");
-    return <div className="p-8">Lỗi khi tải sản phẩm</div>;
+    return (
+      <div className="flex min-h-[60dvh] items-center justify-center p-4 sm:p-6 lg:p-8">
+        <p className="text-base text-muted-foreground sm:text-lg">
+          Lỗi khi tải sản phẩm
+        </p>
+      </div>
+    );
   }
 }

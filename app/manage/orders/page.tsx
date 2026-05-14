@@ -4,11 +4,11 @@ import { Header } from "@/components/orders/header";
 import { OrdersFilters } from "@/components/orders/order-filter";
 import { OrdersList } from "@/components/orders/order-list";
 import { OrderStatsCards } from "@/components/orders/order-stats-cards";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/use-toast";
 import { logger } from "@/lib/logger";
 import { adminOrderResource } from "@/resources/admin-order.resource";
 import { OrderStatus } from "@/services/internal/customers/guests/guest.types";
-
 import { useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
@@ -19,7 +19,6 @@ export default function OrdersPage() {
   const [debouncedSearch] = useDebounceValue(searchQuery, 400);
   const [selectedStatus, setSelectedStatus] = useState<FilterStatus>("ALL");
 
-  /** API */
   const { data, isLoading } = adminOrderResource.useListQuery({
     page: 1,
     size: 20,
@@ -33,7 +32,6 @@ export default function OrdersPage() {
 
   const updateOrderMutation = adminOrderResource.useUpdateMutation();
 
-  /** Update status */
   const handleStatusChange = async (
     orderId: number,
     newStatus: OrderStatus,
@@ -49,7 +47,7 @@ export default function OrdersPage() {
         variant: "success",
       });
     } catch (error) {
-      logger.error({ error }, "Có Lỗi xảy ra");
+      logger.error({ error }, "Có lỗi xảy ra");
       toast({
         description: "Có lỗi xảy ra",
         variant: "error",
@@ -59,17 +57,18 @@ export default function OrdersPage() {
 
   if (isLoading || statusLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-gray-400">
-        Đang tải đơn hàng...
+      <div className="flex min-h-[60dvh] flex-col items-center justify-center gap-3 text-muted-foreground">
+        <Spinner className="size-6" />
+        <p className="text-sm">Đang tải đơn hàng...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-dvh bg-background text-foreground">
       <Header />
 
-      <main className="container mx-auto px-6 py-8">
+      <main className="container mx-auto space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <OrderStatsCards
           stats={
             dataStatus ?? {

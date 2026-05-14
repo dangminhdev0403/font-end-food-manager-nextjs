@@ -3,6 +3,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Wire the JS-based design system (font scale, elevation, z-index, motion,
+ * animations, container, etc.) into Tailwind v4. Color tokens stay in the
+ * `@theme inline` block below so shadcn/ui CSS variables remain the single
+ * source of truth for light/dark theming.
+ * See: .cursor/rules/ui-ux-pro-max.mdc */
+@config "../tailwind.config.ts";
+
 @custom-variant dark (&:is(.dark *));
 
 @keyframes fade-in {

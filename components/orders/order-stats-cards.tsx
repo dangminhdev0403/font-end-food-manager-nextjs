@@ -1,5 +1,6 @@
 "use client";
 
+import { Card, CardContent } from "@/components/ui/card";
 import { OrderStatusCount } from "@/services/internal/admin/orders/order.types";
 import {
   AlertCircle,
@@ -8,89 +9,86 @@ import {
   CreditCard,
   Package,
   XCircle,
+  type LucideIcon,
 } from "lucide-react";
-
-
 
 interface OrderStatsCardProps {
   stats: OrderStatusCount;
 }
 
+type StatItem = {
+  label: string;
+  value: number;
+  icon: LucideIcon;
+  /** Tailwind classes for the icon container. Status colors are intentional. */
+  iconClass: string;
+};
+
 export function OrderStatsCards({ stats }: OrderStatsCardProps) {
-  const statItems = [
+  const statItems: StatItem[] = [
     {
-      label: "Tổng Đơn",
+      label: "Tổng đơn",
       value: stats.ALL,
       icon: Package,
-      color: "bg-blue-500/15 text-blue-400",
-      border: "border-blue-500/30",
+      iconClass: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
     },
     {
-      label: "Chờ Xử Lí",
+      label: "Chờ xử lý",
       value: stats.PENDING,
       icon: AlertCircle,
-      color: "bg-yellow-500/15 text-yellow-400",
-      border: "border-yellow-500/30",
+      iconClass: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400",
     },
-
     {
-      label: "Đang Nấu",
+      label: "Đang nấu",
       value: stats.COOKING,
       icon: ChefHat,
-      color: "bg-orange-500/15 text-orange-400",
-      border: "border-orange-500/30",
+      iconClass: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
     },
     {
-      label: "Đang Phục Vụ",
+      label: "Đang phục vụ",
       value: stats.CONFIRMED,
       icon: CheckCircle2,
-      color: "bg-indigo-500/15 text-indigo-400",
-      border: "border-indigo-500/30",
+      iconClass: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400",
     },
     {
-      label: "Đã Thanh Toán",
+      label: "Đã thanh toán",
       value: stats.PAID,
       icon: CreditCard,
-      color: "bg-green-500/15 text-green-400",
-      border: "border-green-500/30",
+      iconClass: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
     },
     {
-      label: "Đã Hủy",
+      label: "Đã huỷ",
       value: stats.CANCELLED,
       icon: XCircle,
-      color: "bg-red-500/15 text-red-400",
-      border: "border-red-500/30",
+      iconClass: "bg-red-500/15 text-red-600 dark:text-red-400",
     },
   ];
 
   return (
-    <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-6">
       {statItems.map((stat) => {
         const Icon = stat.icon;
-
         return (
-          <div
+          <Card
             key={stat.label}
-            className={`rounded-xl border ${stat.border} bg-[#1f1f1f] p-5 transition-all hover:shadow-lg hover:scale-[1.02]`}
+            className="transition-shadow duration-base hover:shadow-md"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-400">
+            <CardContent className="flex items-center justify-between gap-3 p-4">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-medium text-muted-foreground sm:text-sm">
                   {stat.label}
                 </p>
-
-                <p className="mt-2 text-3xl font-bold text-white">
+                <p className="mt-1 text-xl font-bold tabular-nums text-foreground sm:text-2xl md:text-3xl">
                   {stat.value}
                 </p>
               </div>
-
               <div
-                className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.color}`}
+                className={`flex size-10 shrink-0 items-center justify-center rounded-md ${stat.iconClass}`}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="size-5" aria-hidden />
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         );
       })}
     </div>

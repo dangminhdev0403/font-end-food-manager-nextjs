@@ -1,29 +1,29 @@
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default function Loading() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-black p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Skeleton */}
-        <div className="mb-8 h-16 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg animate-pulse" />
+    <main className="min-h-dvh bg-background">
+      <div className="container mx-auto space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <Skeleton className="h-12 w-full max-w-md" />
 
-        {/* Grid Skeleton */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left sidebar */}
-          <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="h-20 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg animate-pulse"
-              />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <Card>
+            <CardContent className="space-y-3 p-4 sm:p-6">
+              {Array.from({ length: 5 }, (_, i) => `users-skeleton-${i}`).map(
+                (key) => (
+                  <Skeleton key={key} className="h-20 w-full" />
+                ),
+              )}
+            </CardContent>
+          </Card>
 
-          {/* Right content */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="h-40 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg animate-pulse" />
-            <div className="h-96 bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg animate-pulse" />
+          <div className="space-y-6 lg:col-span-2">
+            <Skeleton className="h-40 w-full" />
+            <Skeleton className="h-80 w-full" />
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

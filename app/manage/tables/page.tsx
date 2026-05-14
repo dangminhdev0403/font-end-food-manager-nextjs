@@ -1,4 +1,5 @@
 "use client";
+
 import CountUp from "react-countup";
 import { useDebounceValue } from "usehooks-ts";
 
@@ -6,7 +7,7 @@ import QRCodeModal from "@/components/qr-code-modal";
 import TableCard from "@/components/table-card";
 import TableForm from "@/components/table-form";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +17,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { logger } from "@/lib/logger";
+import { TableItemForm } from "@/schemaValidations/table.schema";
 import {
   useAdminAddTableMutation,
   useAdminDeleteTableMutation,
@@ -27,17 +30,49 @@ import {
   TableItem,
   TableStatus,
 } from "@/services/internal/admin/tables/table.types";
-
-import { logger } from "@/lib/logger";
-import { TableItemForm } from "@/schemaValidations/table.schema";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+
+type StatCardKind = "total" | "empty" | "occupied" | "reserved";
+
+const STAT_CLASSES: Record<StatCardKind, string> = {
+  total: "text-primary",
+  empty: "text-emerald-600 dark:text-emerald-400",
+  occupied: "text-orange-600 dark:text-orange-400",
+  reserved: "text-blue-600 dark:text-blue-400",
+};
+
+function StatCard({
+  label,
+  value,
+  kind,
+}: {
+  label: string;
+  value: number;
+  kind: StatCardKind;
+}) {
+  return (
+    <Card>
+      <CardContent className="space-y-2 p-4 sm:p-5">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {label}
+        </p>
+        <p
+          className={`text-2xl font-bold tabular-nums sm:text-3xl ${STAT_CLASSES[kind]}`}
+        >
+          <CountUp end={value} duration={1.2} />
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<TableStatus | "ALL">("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch] = useDebounceValue(searchTerm, 400);
+
   const { data, isLoading, isFetching, refetch } = useAdminTableQuery({
     page: currentPage,
     size: 12,
@@ -50,6 +85,7 @@ export default function Home() {
   const addTableMutation = useAdminAddTableMutation();
   const updateTableMutation = useAdminEditTableMutation();
   const deleteTableMutation = useAdminDeleteTableMutation();
+
   const listTable = data?.items || [];
   const pageable = data?.meta;
 
@@ -57,18 +93,20 @@ export default function Home() {
   const [selectedTable, setSelectedTable] = useState<TableItem | null>(null);
   const [qrTableId, setQrTableId] = useState<number | null>(null);
   const tableSectionRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     tableSectionRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });
   }, [currentPage]);
+
   const handleAddTable = async (
     newTable: Omit<TableItemForm, "id" | "orderedDishes">,
   ) => {
     if (addTableMutation.isPending) return;
     try {
-      const res = await addTableMutation.mutateAsync(newTable);
+      await addTableMutation.mutateAsync(newTable);
       await refetch();
       await refetchCounts();
     } catch (error) {}
@@ -79,8 +117,7 @@ export default function Home() {
     if (updateTableMutation.isPending) return;
     try {
       logger.info({ updatedTable }, "Updating table with data:");
-      const res = await updateTableMutation.mutateAsync(updatedTable);
-      console.log(res);
+      await updateTableMutation.mutateAsync(updatedTable);
       await refetch();
       await refetchCounts();
     } catch (error) {}
@@ -90,8 +127,7 @@ export default function Home() {
   const handleDeleteTable = async (id: number) => {
     if (deleteTableMutation.isPending) return;
     try {
-      const res = await deleteTableMutation.mutateAsync(id);
-      console.log(res);
+      await deleteTableMutation.mutateAsync(id);
       await refetch();
       await refetchCounts();
     } catch (error) {}
@@ -101,91 +137,74 @@ export default function Home() {
     setSearchTerm(value);
     setCurrentPage(1);
   };
-  const totalPages = pageable?.totalPages || 0;
 
+  const totalPages = pageable?.totalPages || 0;
   const allCount = countsData?.data.ALL || 0;
   const emptyCount = countsData?.data.EMPTY || 0;
   const occupiedCount = countsData?.data.OCCUPIED || 0;
   const reservedCount = countsData?.data.RESERVED || 0;
+
   if (isLoading) {
-    return <Spinner />;
+    return (
+      <div className="flex min-h-[60dvh] items-center justify-center">
+        <Spinner className="size-6" />
+      </div>
+    );
   }
+
+  const filterButtons: Array<{
+    value: TableStatus | "ALL";
+    label: string;
+    count: number;
+  }> = [
+    { value: "ALL", label: "Tất cả", count: allCount },
+    { value: "EMPTY", label: "Trống", count: emptyCount },
+    { value: "OCCUPIED", label: "Đang dùng", count: occupiedCount },
+    { value: "RESERVED", label: "Đặt trước", count: reservedCount },
+  ];
+
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-200">
-      {/* Header */}
-      <header className=" top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-primary">
-                🍽️ Quản Lý Bàn Ăn
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Hệ thống quản lý bàn ăn hiện đại
-              </p>
-            </div>
-          </div>
+    <div className="min-h-dvh bg-background text-foreground">
+      <header className="border-b border-border bg-background/80 backdrop-blur">
+        <div className="container mx-auto px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Quản lý bàn ăn
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground sm:text-base">
+            Hệ thống quản lý bàn ăn của nhà hàng
+          </p>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        {/* Statistics */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-10">
-          <Card className="p-5 sm:p-6 bg-card border-2 border-border hover:shadow-md transition-shadow">
-            <div className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-              Tổng Bàn
-            </div>
-            <div className="text-3xl sm:text-4xl font-bold text-primary mt-3">
-              <CountUp end={allCount} duration={1.2} />
-            </div>
-          </Card>
-          <Card className="p-5 sm:p-6 bg-card border-2 border-border hover:shadow-md transition-shadow">
-            <div className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-              Trống
-            </div>
-            <div className="text-3xl sm:text-4xl font-bold text-green-600 dark:text-green-400 mt-3">
-              <CountUp end={emptyCount} duration={1.2} />
-            </div>
-          </Card>
-          <Card className="p-5 sm:p-6 bg-card border-2 border-border hover:shadow-md transition-shadow">
-            <div className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-              Đang Dùng
-            </div>
-            <div className="text-3xl sm:text-4xl font-bold text-orange-600 dark:text-orange-400 mt-3">
-              <CountUp end={occupiedCount} duration={1.2} />
-            </div>
-          </Card>
-          <Card className="p-5 sm:p-6 bg-card border-2 border-border hover:shadow-md transition-shadow">
-            <div className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-              Đặt Trước
-            </div>
-            <div className="text-3xl sm:text-4xl font-bold text-blue-600 dark:text-blue-400 mt-3">
-              <CountUp end={reservedCount} duration={1.2} />
-            </div>
-          </Card>
+      <main className="container mx-auto space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+          <StatCard label="Tổng bàn" value={allCount} kind="total" />
+          <StatCard label="Trống" value={emptyCount} kind="empty" />
+          <StatCard label="Đang dùng" value={occupiedCount} kind="occupied" />
+          <StatCard label="Đặt trước" value={reservedCount} kind="reserved" />
         </div>
 
-        {/* Search and Add Button */}
         <div
-          className="flex flex-col sm:flex-row gap-3 mb-8"
           ref={tableSectionRef}
+          className="flex flex-col gap-3 sm:flex-row sm:items-center"
         >
           <Input
             placeholder="Tìm kiếm bàn theo tên..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
-            className="flex-1 h-11 text-base"
+            aria-label="Tìm kiếm bàn"
+            className="h-11 flex-1"
           />
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 h-11 px-6 font-semibold">
-                <Plus className="h-5 w-5" />
-                <span>Thêm Bàn Mới</span>
+              <Button className="h-11 gap-2 sm:w-auto">
+                <Plus className="size-5" aria-hidden />
+                <span>Thêm bàn mới</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Thêm Bàn Ăn Mới</DialogTitle>
+                <DialogTitle>Thêm bàn ăn mới</DialogTitle>
               </DialogHeader>
               <TableForm
                 onSubmit={handleAddTable}
@@ -195,78 +214,37 @@ export default function Home() {
           </Dialog>
         </div>
 
-        {/* Filter Buttons */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          <Button
-            variant={statusFilter === "ALL" ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setStatusFilter("ALL");
-              setCurrentPage(1);
-            }}
-            className="font-medium"
-          >
-            <CountUp
-              end={allCount}
-              duration={1.2}
-              prefix="Tất Cả ("
-              suffix=")"
-            />
-          </Button>
-          <Button
-            variant={statusFilter === "EMPTY" ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setStatusFilter("EMPTY");
-              setCurrentPage(1);
-            }}
-            className="font-medium"
-          >
-            <CountUp
-              end={emptyCount}
-              duration={1.2}
-              prefix="Trống ("
-              suffix=")"
-            />
-          </Button>
-          <Button
-            variant={statusFilter === "OCCUPIED" ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setStatusFilter("OCCUPIED");
-              setCurrentPage(1);
-            }}
-            className="font-medium"
-          >
-            <CountUp
-              end={occupiedCount}
-              duration={1.2}
-              prefix="Đang Dùng ("
-              suffix=")"
-            />
-          </Button>
-          <Button
-            variant={statusFilter === "RESERVED" ? "default" : "outline"}
-            size="sm"
-            onClick={() => {
-              setStatusFilter("RESERVED");
-              setCurrentPage(1);
-            }}
-            className="font-medium"
-          >
-            <CountUp
-              end={reservedCount}
-              duration={1.2}
-              prefix="Đặt Trước ("
-              suffix=")"
-            />
-          </Button>
+        <div className="flex flex-wrap gap-2">
+          {filterButtons.map(({ value, label, count }) => {
+            const isActive = statusFilter === value;
+            return (
+              <Button
+                key={value}
+                variant={isActive ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setStatusFilter(value);
+                  setCurrentPage(1);
+                }}
+                aria-pressed={isActive}
+                className="h-10"
+              >
+                <CountUp
+                  end={count}
+                  duration={1.2}
+                  prefix={`${label} (`}
+                  suffix=")"
+                />
+              </Button>
+            );
+          })}
         </div>
 
-        {/* Tables Grid with Pagination */}
-        <div className="space-y-6">
+        <section className="space-y-4 sm:space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-foreground">Danh Sách Bàn</h2>
+            <h2 className="text-base font-bold text-foreground sm:text-lg">
+              Danh sách bàn
+            </h2>
             {totalPages > 1 && (
               <p className="text-sm text-muted-foreground">
                 Trang {currentPage} / {totalPages}
@@ -276,7 +254,7 @@ export default function Home() {
 
           {listTable.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
                 {listTable.map((table) => (
                   <TableCard
                     key={table.id}
@@ -288,33 +266,39 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* Pagination Controls */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 pt-4">
+                <nav
+                  aria-label="Phân trang"
+                  className="flex flex-wrap items-center justify-center gap-2 pt-2"
+                >
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1 || isFetching}
-                    className="gap-2"
+                    className="h-10 gap-2"
                   >
-                    <ChevronLeft className="h-4 w-4" />
+                    <ChevronLeft className="size-4" aria-hidden />
                     Trước
                   </Button>
 
-                  <div className="flex items-center gap-1">
+                  <div className="flex flex-wrap items-center gap-1">
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      (page) => (
-                        <Button
-                          key={page}
-                          variant={currentPage === page ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCurrentPage(page)}
-                          className="min-w-10 h-10"
-                        >
-                          {page}
-                        </Button>
-                      ),
+                      (page) => {
+                        const isCurrent = currentPage === page;
+                        return (
+                          <Button
+                            key={page}
+                            variant={isCurrent ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            aria-current={isCurrent ? "page" : undefined}
+                            className="h-10 min-w-10"
+                          >
+                            {page}
+                          </Button>
+                        );
+                      },
                     )}
                   </div>
 
@@ -325,24 +309,25 @@ export default function Home() {
                       setCurrentPage((p) => Math.min(totalPages, p + 1))
                     }
                     disabled={currentPage === totalPages || isFetching}
-                    className="gap-2"
+                    className="h-10 gap-2"
                   >
                     Tiếp
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="size-4" aria-hidden />
                   </Button>
-                </div>
+                </nav>
               )}
             </>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground text-lg">
-                Không tìm thấy bàn nào
-              </p>
-            </div>
+            <Card>
+              <CardContent className="flex flex-col items-center gap-2 p-8 text-center sm:p-12">
+                <p className="text-base text-muted-foreground sm:text-lg">
+                  Không tìm thấy bàn nào
+                </p>
+              </CardContent>
+            </Card>
           )}
-        </div>
+        </section>
 
-        {/* Edit Dialog */}
         {selectedTable && (
           <Dialog
             open={!!selectedTable}
@@ -350,7 +335,7 @@ export default function Home() {
           >
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Chỉnh Sửa Bàn Ăn</DialogTitle>
+                <DialogTitle>Chỉnh sửa bàn ăn</DialogTitle>
               </DialogHeader>
               <TableForm
                 initialData={selectedTable}
@@ -363,7 +348,6 @@ export default function Home() {
           </Dialog>
         )}
 
-        {/* QR Code Modal */}
         {qrTableId !== null && (
           <QRCodeModal
             tableToken={

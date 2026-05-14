@@ -2,138 +2,115 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-import { formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { Order } from "@/services/internal/admin/orders/order.types";
 import { OrderStatus } from "@/services/internal/customers/customer.types";
-
 import {
   AlertCircle,
   CheckCircle,
   ChefHat,
   ChevronDown,
   CreditCard,
-  LucideIcon,
   MoreVertical,
   X,
+  type LucideIcon,
 } from "lucide-react";
-
 import { useState } from "react";
-
-/* ---------------- STATUS CONFIG ---------------- */
 
 const STATUS_CONFIG: Record<
   OrderStatus,
   {
     label: string;
-    badge: string;
+    badgeClass: string;
     icon: LucideIcon;
     next: OrderStatus[];
-    actionColor: string;
   }
 > = {
   PENDING: {
     label: "Chờ xử lý",
-    badge: "bg-yellow-500/20 text-yellow-300 border-yellow-500/40",
+    badgeClass:
+      "border-yellow-500/30 bg-yellow-500/15 text-yellow-700 dark:text-yellow-300",
     icon: AlertCircle,
     next: ["CONFIRMED", "CANCELLED"],
-    actionColor: "bg-yellow-500 hover:bg-yellow-600",
   },
-
   CONFIRMED: {
     label: "Đang phục vụ",
-    badge: "bg-indigo-500/20 text-indigo-300 border-indigo-500/40",
+    badgeClass:
+      "border-indigo-500/30 bg-indigo-500/15 text-indigo-700 dark:text-indigo-300",
     icon: CheckCircle,
     next: ["COOKING", "CANCELLED"],
-    actionColor: "bg-indigo-500 hover:bg-indigo-600",
   },
-
   COOKING: {
     label: "Đang nấu",
-    badge: "bg-orange-500/20 text-orange-300 border-orange-500/40",
+    badgeClass:
+      "border-orange-500/30 bg-orange-500/15 text-orange-700 dark:text-orange-300",
     icon: ChefHat,
     next: ["PAID"],
-    actionColor: "bg-orange-500 hover:bg-orange-600",
   },
-
   PAID: {
     label: "Đã thanh toán",
-    badge: "bg-green-500/20 text-green-300 border-green-500/40",
+    badgeClass:
+      "border-emerald-500/30 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
     icon: CreditCard,
     next: [],
-    actionColor: "bg-green-500 hover:bg-green-600",
   },
-
   CANCELLED: {
     label: "Đã huỷ",
-    badge: "bg-red-500/20 text-red-300 border-red-500/40",
+    badgeClass:
+      "border-red-500/30 bg-red-500/15 text-red-700 dark:text-red-300",
     icon: X,
     next: [],
-    actionColor: "bg-red-500 hover:bg-red-600",
   },
 };
-
-/* ---------------- UTIL ---------------- */
-
-function formatTime(date: string) {
-  const created = new Date(date);
-  const now = new Date();
-  const diff = Math.floor((now.getTime() - created.getTime()) / 60000);
-
-  if (diff < 1) return "Vừa xong";
-  if (diff < 60) return `${diff} phút trước`;
-
-  return `${Math.floor(diff / 60)} giờ trước`;
-}
-
-/* ---------------- COMPONENT ---------------- */
 
 interface OrderCardProps {
   order: Order;
   onStatusChange: (status: OrderStatus) => void;
 }
 
-export function OrderCard({ order, onStatusChange }: OrderCardProps) {
+export function OrderCard({ order, onStatusChange }: Readonly<OrderCardProps>) {
   const [expanded, setExpanded] = useState(false);
 
   const config = STATUS_CONFIG[order.status];
   const StatusIcon = config.icon;
-  return (
-    <div className="group rounded-xl border border-[#2a2a2a] bg-gradient-to-br from-[#141414] to-[#0a0a0a] shadow-lg transition-all duration-300 hover:border-[#3a3a3a] hover:shadow-xl">
-      {/* HEADER */}
 
-      <div className="flex flex-col gap-4 border-b border-[#2a2a2a] p-5 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 font-bold text-white shadow-lg">
-            <span className="truncate text-sm px-1">{order.tableName}</span>
+  return (
+    <Card className="overflow-hidden transition-shadow duration-base hover:shadow-md">
+      <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        <div className="flex items-center gap-3">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary sm:size-14">
+            <span className="truncate px-1 text-xs font-semibold sm:text-sm">
+              {order.tableName}
+            </span>
           </div>
 
-          <div className="flex-1">
-            <div className="flex flex-col gap-1">
-              <p className="text-base font-bold text-white">{order.id}</p>
-
-              {order.guestName && (
-                <p className="text-sm text-gray-400">{order.guestName}</p>
-              )}
-            </div>
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <p className="text-sm font-bold text-foreground sm:text-base">
+              #{order.id}
+            </p>
+            {order.guestName && (
+              <p className="truncate text-xs text-muted-foreground sm:text-sm">
+                {order.guestName}
+              </p>
+            )}
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <Badge
-            className={`border px-3 py-1.5 text-xs font-medium ${config.badge}`}
+            variant="outline"
+            className={cn("h-7 gap-1 px-2.5 text-xs", config.badgeClass)}
           >
-            <StatusIcon className="mr-1.5 h-3.5 w-3.5" />
-            {config.label}
+            <StatusIcon className="size-3.5" aria-hidden />
+            <span>{config.label}</span>
           </Badge>
-
-          {/* ACTION MENU */}
 
           {config.next.length > 0 && (
             <DropdownMenu>
@@ -141,21 +118,17 @@ export function OrderCard({ order, onStatusChange }: OrderCardProps) {
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="text-gray-400 transition-colors hover:bg-[#1f1f1f] hover:text-white"
+                  className="size-9"
+                  aria-label="Cập nhật trạng thái"
                 >
-                  <MoreVertical size={18} />
+                  <MoreVertical className="size-4" aria-hidden />
                 </Button>
               </DropdownMenuTrigger>
-
-              <DropdownMenuContent
-                align="end"
-                className="border-[#2a2a2a] bg-[#111] text-gray-200"
-              >
-                {config.next.map((status, index) => (
+              <DropdownMenuContent align="end">
+                {config.next.map((status) => (
                   <DropdownMenuItem
-                    key={`${status}-${index}`}
+                    key={status}
                     onClick={() => onStatusChange(status)}
-                    className="cursor-pointer focus:bg-[#1f1f1f]"
                   >
                     {STATUS_CONFIG[status].label}
                   </DropdownMenuItem>
@@ -167,31 +140,35 @@ export function OrderCard({ order, onStatusChange }: OrderCardProps) {
           <Button
             size="icon"
             variant="ghost"
-            onClick={() => setExpanded(!expanded)}
-            className="text-gray-400 transition-colors hover:bg-[#1f1f1f] hover:text-white"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+            aria-label={
+              expanded ? "Thu gọn chi tiết đơn hàng" : "Mở chi tiết đơn hàng"
+            }
+            className="size-9"
           >
             <ChevronDown
-              className={`h-4 w-4 transition-transform duration-300 ${
-                expanded ? "rotate-180" : ""
-              }`}
+              className={cn(
+                "size-4 transition-transform duration-base",
+                expanded && "rotate-180",
+              )}
+              aria-hidden
             />
           </Button>
         </div>
       </div>
 
-      {/* ITEMS PREVIEW */}
-
-      <div className="space-y-3 px-5 py-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+      <CardContent className="space-y-3 p-4 sm:p-5">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Danh sách món ăn
         </p>
         <div className="flex flex-wrap gap-2">
           {order.items.slice(0, 2).map((item) => (
             <span
               key={item.id}
-              className="inline-flex items-center rounded-lg bg-[#1f1f1f] px-3.5 py-2 text-sm font-medium text-gray-100 ring-1 ring-inset ring-[#2a2a2a] transition-colors group-hover:bg-[#2a2a2a]"
+              className="inline-flex items-center gap-1.5 rounded-md bg-muted px-3 py-1.5 text-sm font-medium text-foreground"
             >
-              <span className="mr-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-500/30 text-xs text-blue-300">
+              <span className="inline-flex size-5 items-center justify-center rounded-full bg-primary/15 text-xs text-primary">
                 {item.quantity}
               </span>
               {item.name}
@@ -199,76 +176,60 @@ export function OrderCard({ order, onStatusChange }: OrderCardProps) {
           ))}
 
           {order.items.length > 2 && (
-            <span className="inline-flex items-center rounded-lg bg-[#1f1f1f] px-3.5 py-2 text-sm font-medium text-gray-400 ring-1 ring-inset ring-[#2a2a2a] transition-colors group-hover:bg-[#2a2a2a]">
+            <span className="inline-flex items-center rounded-md bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground">
               +{order.items.length - 2} món khác
             </span>
           )}
         </div>
-      </div>
 
-      {/* EXPANDED */}
-
-      {expanded && (
-        <div className="space-y-5 border-t border-[#2a2a2a] px-5 py-5">
-          <div className="space-y-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-gray-500">
-              Chi tiết đơn hàng
-            </p>
-
-            <div className="space-y-2.5">
-              {order.items.map((item, index) => (
-                <div
-                  key={`${item.id}-${index}`}
-                  className="flex items-start justify-between rounded-lg bg-[#0f0f0f] px-3.5 py-3 ring-1 ring-inset ring-[#1f1f1f] transition-colors hover:ring-[#2a2a2a]"
-                >
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-100">
+        {expanded && (
+          <div className="space-y-4 border-t border-border pt-4">
+            <div className="space-y-2">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                Chi tiết đơn hàng
+              </p>
+              <ul className="space-y-2">
+                {order.items.map((item, index) => (
+                  <li
+                    key={`${item.id}-${index}`}
+                    className="flex items-start justify-between gap-3 rounded-md bg-muted/40 px-3 py-2.5"
+                  >
+                    <p className="text-sm font-medium text-foreground">
                       {item.quantity}x {item.name}
                     </p>
-                  </div>
-
-                  <p className="text-sm font-semibold text-blue-400">
-                    {formatCurrency(item.price * item.quantity)}
-                  </p>
-                </div>
-              ))}
+                    <p className="text-sm font-semibold tabular-nums text-foreground">
+                      {formatCurrency(item.price * item.quantity)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
 
-          {/* TOTAL */}
-
-          <div className="rounded-lg bg-gradient-to-r from-blue-500/10 to-blue-600/10 px-4 py-4 ring-1 ring-inset ring-blue-500/20">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold uppercase tracking-wide text-gray-300">
+            <div className="flex items-center justify-between rounded-md bg-primary/10 px-4 py-3">
+              <p className="text-sm font-semibold uppercase tracking-wide text-foreground">
                 Tổng cộng
               </p>
-
-              <p className="text-2xl font-bold text-blue-400">
+              <p className="text-xl font-bold tabular-nums text-primary sm:text-2xl">
                 {formatCurrency(order.total)}
               </p>
             </div>
+
+            {config.next.length > 0 && (
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {config.next.map((status) => (
+                  <Button
+                    key={status}
+                    onClick={() => onStatusChange(status)}
+                    className="h-10 w-full"
+                  >
+                    {STATUS_CONFIG[status].label}
+                  </Button>
+                ))}
+              </div>
+            )}
           </div>
-
-          {/* ACTION BUTTONS */}
-
-          {config.next.length > 0 && (
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {config.next.map((status) => (
-                <Button
-                  key={status}
-                  size="sm"
-                  onClick={() => onStatusChange(status)}
-                  className={`w-full font-medium text-white transition-all ${
-                    STATUS_CONFIG[status].actionColor
-                  }`}
-                >
-                  {STATUS_CONFIG[status].label}
-                </Button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

@@ -37,7 +37,7 @@ export default function ChangePasswordForm() {
 
   const [visible, setVisible] = useState<Record<string, boolean>>({
     oldPassword: false,
-    password: false,
+    newPassword: false,
     confirmPassword: false,
   });
 
@@ -60,47 +60,61 @@ export default function ChangePasswordForm() {
     }
   };
 
+  const fields = [
+    { name: "oldPassword", label: "Mật khẩu cũ" },
+    { name: "newPassword", label: "Mật khẩu mới" },
+    { name: "confirmPassword", label: "Nhập lại mật khẩu mới" },
+  ] as const;
+
   return (
     <Form {...form}>
       <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
         <Card className="border-destructive/40">
           <CardHeader>
-            <CardTitle className="text-destructive">Đổi mật khẩu</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-base text-destructive sm:text-lg">
+              Đổi mật khẩu
+            </CardTitle>
+            <CardDescription className="text-sm">
               Bạn sẽ bị đăng xuất khỏi các thiết bị khác sau khi đổi mật khẩu.
             </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {(
-              [
-                { name: "oldPassword", label: "Mật khẩu cũ" },
-                { name: "newPassword", label: "Mật khẩu mới" },
-                { name: "confirmPassword", label: "Nhập lại mật khẩu mới" },
-              ] as const
-            ).map((item) => (
+            {fields.map((item) => (
               <FormField
                 key={item.name}
                 control={form.control}
                 name={item.name}
                 render={({ field }) => (
-                  <FormItem>
-                    <Label>{item.label}</Label>
+                  <FormItem className="space-y-2">
+                    <Label htmlFor={`pwd-${item.name}`}>{item.label}</Label>
 
                     <div className="relative">
                       <Input
+                        id={`pwd-${item.name}`}
                         type={visible[item.name] ? "text" : "password"}
+                        autoComplete={
+                          item.name === "oldPassword"
+                            ? "current-password"
+                            : "new-password"
+                        }
+                        className="h-11 pr-11"
                         {...field}
                       />
                       <button
                         type="button"
                         onClick={() => toggle(item.name)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        aria-label={
+                          visible[item.name]
+                            ? "Ẩn mật khẩu"
+                            : "Hiện mật khẩu"
+                        }
+                        className="absolute right-2 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors duration-base hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {visible[item.name] ? (
-                          <EyeOff className="h-4 w-4" />
+                          <EyeOff aria-hidden className="size-4" />
                         ) : (
-                          <Eye className="h-4 w-4" />
+                          <Eye aria-hidden className="size-4" />
                         )}
                       </button>
                     </div>
@@ -111,11 +125,20 @@ export default function ChangePasswordForm() {
               />
             ))}
 
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" type="button">
-                Hủy
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button
+                variant="outline"
+                type="button"
+                className="h-11 sm:w-auto"
+              >
+                Huỷ
               </Button>
-              <Button variant="destructive" type="submit">
+              <Button
+                variant="destructive"
+                type="submit"
+                className="h-11 sm:w-auto"
+                disabled={updatePasswordMutaion.isPending}
+              >
                 Cập nhật mật khẩu
               </Button>
             </div>

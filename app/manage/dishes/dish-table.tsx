@@ -10,28 +10,6 @@ import {
 import { createContext, useContext, useMemo, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
-import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/spinner";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
 import AddDish from "@/app/manage/dishes/add-dish";
 import EditDish from "@/app/manage/dishes/edit-dish";
 import {
@@ -43,11 +21,33 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { toast } from "@/components/ui/use-toast";
 import { logger } from "@/lib/logger";
 import { formatCurrency } from "@/lib/utils";
 import { productResource } from "@/resources/product.resource";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { Inbox, Search } from "lucide-react";
 
 type DishItem = {
   id: number;
@@ -59,68 +59,90 @@ type DishItem = {
 
 const PAGE_SIZE = 10;
 
-const DishTableContext = createContext<any>(null);
+const DishTableContext = createContext<{
+  setDishIdEdit: (id: number) => void;
+  setDishDelete: (dish: DishItem) => void;
+}>({ setDishIdEdit: () => {}, setDishDelete: () => {} });
 
 const columns: ColumnDef<DishItem>[] = [
   {
     accessorKey: "id",
     header: "ID",
+    cell: ({ row }) => (
+      <span className="font-mono text-xs text-muted-foreground">
+        {row.original.id}
+      </span>
+    ),
   },
   {
+    id: "image",
     header: "Ảnh",
     cell: ({ row }) => (
-      <div className="flex items-center justify-center w-12 h-12 flex-shrink-0">
-        <Avatar className="w-12 h-12 rounded-md">
-          <AvatarImage src={row.original.images?.[0]} />
-          <AvatarFallback>{row.original.name}</AvatarFallback>
-        </Avatar>
-      </div>
+      <Avatar className="size-12 rounded-md">
+        <AvatarImage
+          src={row.original.images?.[0]}
+          alt={row.original.name ?? "Ảnh món ăn"}
+        />
+        <AvatarFallback className="rounded-md text-xs">
+          {row.original.name?.slice(0, 2).toUpperCase() ?? "—"}
+        </AvatarFallback>
+      </Avatar>
     ),
   },
   {
     accessorKey: "name",
     header: "Tên",
+    cell: ({ row }) => (
+      <span className="font-medium text-foreground">{row.original.name}</span>
+    ),
   },
   {
     accessorKey: "basePrice",
     header: "Giá",
-    cell: ({ row }) => formatCurrency(row.original.basePrice),
+    cell: ({ row }) => (
+      <span className="tabular-nums text-foreground">
+        {formatCurrency(row.original.basePrice)}
+      </span>
+    ),
   },
   {
     accessorKey: "description",
     header: "Mô tả",
     cell: ({ row }) => (
-      <p className="max-w-[320px] truncate text-muted-foreground">
+      <p className="line-clamp-2 max-w-prose text-sm text-muted-foreground">
         {row.original.description}
       </p>
     ),
   },
   {
     id: "actions",
-    header: "Hành động",
+    header: () => <span className="sr-only">Hành động</span>,
     cell: ({ row }) => {
       const { setDishIdEdit, setDishDelete } = useContext(DishTableContext);
-      const openEditDish = () => {
-        setDishIdEdit(row.original.id);
-      };
-
-      const openDeleteDish = () => {
-        setDishDelete(row.original);
-      };
       return (
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <DotsHorizontalIcon />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-9"
+              aria-label={`Tuỳ chọn cho ${row.original.name ?? "món ăn"}`}
+            >
+              <DotsHorizontalIcon className="size-4" />
             </Button>
           </DropdownMenuTrigger>
-
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>Hành động</DropdownMenuLabel>
             <DropdownMenuSeparator />
-
-            <DropdownMenuItem onClick={openEditDish}>Sửa</DropdownMenuItem>
-            <DropdownMenuItem onClick={openDeleteDish}>Xóa</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setDishIdEdit(row.original.id)}>
+              Sửa
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setDishDelete(row.original)}
+              className="text-destructive focus:text-destructive"
+            >
+              Xoá
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -141,34 +163,27 @@ function AlertDialogDeleteDish({
     <AlertDialog
       open={Boolean(dishDelete)}
       onOpenChange={(value) => {
-        if (!value) {
-          setDishDelete(null);
-        }
+        if (!value) setDishDelete(null);
       }}
     >
-      <AlertDialogContent className="max-w-md border border-border bg-background shadow-xl">
+      <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2 text-lg font-semibold">
-            ⚠️ Xóa món ăn
-          </AlertDialogTitle>
-
-          <AlertDialogDescription className="text-sm text-muted-foreground">
+          <AlertDialogTitle>Xoá món ăn</AlertDialogTitle>
+          <AlertDialogDescription>
             Món{" "}
-            <span className="font-semibold text-red-500">
+            <span className="font-semibold text-destructive">
               {dishDelete?.name}
             </span>{" "}
-            sẽ bị xóa vĩnh viễn. Hành động này không thể hoàn tác.
+            sẽ bị xoá vĩnh viễn. Hành động này không thể hoàn tác.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <AlertDialogFooter className="gap-2">
-          <AlertDialogCancel className="h-9 bg-red">Hủy</AlertDialogCancel>
-
+          <AlertDialogCancel className="h-10">Huỷ</AlertDialogCancel>
           <Button
-            variant="gradient"
-            size="default"
-            className="h-9 px-4 "
+            variant="destructive"
             disabled={deleteMutation.isPending}
+            className="h-10"
             onClick={async () => {
               if (!dishDelete) return;
               try {
@@ -184,17 +199,72 @@ function AlertDialogDeleteDish({
                   variant: "error",
                 });
               }
-
               setDishDelete(null);
             }}
           >
-            {deleteMutation.isPending ? "Đang xóa..." : "Xóa"}
+            {deleteMutation.isPending ? "Đang xoá..." : "Xoá"}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
 }
+
+function MobileDishCard({
+  dish,
+  onEdit,
+  onDelete,
+}: {
+  dish: DishItem;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex gap-3 p-4">
+        <Avatar className="size-16 shrink-0 rounded-md">
+          <AvatarImage src={dish.images?.[0]} alt={dish.name ?? ""} />
+          <AvatarFallback className="rounded-md text-xs">
+            {dish.name?.slice(0, 2).toUpperCase() ?? "—"}
+          </AvatarFallback>
+        </Avatar>
+
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <p className="truncate font-medium text-foreground">{dish.name}</p>
+          <p className="line-clamp-2 text-xs text-muted-foreground">
+            {dish.description}
+          </p>
+          <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">
+            {formatCurrency(dish.basePrice)}
+          </p>
+        </div>
+
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-9 shrink-0"
+              aria-label={`Tuỳ chọn cho ${dish.name ?? "món ăn"}`}
+            >
+              <DotsHorizontalIcon className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onEdit}>Sửa</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={onDelete}
+              className="text-destructive focus:text-destructive"
+            >
+              Xoá
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function DishTable() {
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebounceValue(search, 400);
@@ -218,78 +288,76 @@ export default function DishTable() {
     data: listTable,
     columns,
     pageCount: meta?.totalPages ?? 0,
-
-    state: {
-      pagination,
-    },
-
+    state: { pagination },
     manualPagination: true,
     onPaginationChange: setPagination,
-
     getCoreRowModel: getCoreRowModel(),
   });
+
   const contextValue = useMemo(
     () => ({
-      dishIdEdit,
-      setDishIdEdit,
-      dishDelete,
-      setDishDelete,
+      setDishIdEdit: (id: number) => setDishIdEdit(id),
+      setDishDelete: (dish: DishItem) => setDishDelete(dish),
     }),
-    [dishIdEdit, dishDelete],
+    [],
   );
+
   const handleSearch = (value: string) => {
     setSearch(value);
-
-    setPagination((prev) => ({
-      ...prev,
-      pageIndex: 0,
-    }));
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
   };
+
+  const totalPages = meta?.totalPages ?? 1;
+
   return (
     <DishTableContext.Provider value={contextValue}>
-      <div className="w-full space-y-5 mx-auto">
-        {/* Search + Count Header */}
-        <EditDish id={dishIdEdit} setId={setDishIdEdit} />
-        <AlertDialogDeleteDish
-          dishDelete={dishDelete}
-          setDishDelete={setDishDelete}
-          deleteMutation={deleteMutation}
-        />{" "}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex-1 max-w-sm relative ">
+      <EditDish id={dishIdEdit} setId={setDishIdEdit} />
+      <AlertDialogDeleteDish
+        dishDelete={dishDelete}
+        setDishDelete={setDishDelete}
+        deleteMutation={deleteMutation}
+      />
+
+      <div className="space-y-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="relative w-full md:max-w-sm">
+            <Search
+              aria-hidden
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            />
             <Input
-              placeholder="🔎 Tìm món ăn..."
+              placeholder="Tìm món ăn..."
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
+              className="h-11 pl-9"
+              aria-label="Tìm món ăn"
             />
           </div>
-
-          <div className="flex items-center gap-3">
-            <div className="h-10 px-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 flex items-center border border-blue-100 dark:border-blue-900/30">
-              <span className="text-sm font-medium text-foreground">
-                Hiện:{" "}
-                <span className="font-semibold text-blue-600 dark:text-blue-400">
-                  {listTable?.length ?? 0} / {meta?.totalItems ?? 0}{" "}
-                </span>{" "}
-                món
+          <div className="flex items-center justify-between gap-3 md:justify-end">
+            <p className="text-sm text-muted-foreground">
+              Hiện{" "}
+              <span className="font-medium text-foreground">
+                {listTable.length}
               </span>
-            </div>
+              {" / "}
+              <span className="font-medium text-foreground">
+                {meta?.totalItems ?? 0}
+              </span>{" "}
+              món
+            </p>
+            <AddDish />
           </div>
-          <AddDish />
-        </div>{" "}
-        {/* Table Container */}
-        <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        </div>
+
+        <Card className="hidden overflow-hidden md:block">
           <Table>
-            <TableHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900/40 dark:to-slate-800/40 sticky top-0 z-10">
+            <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow
-                  key={headerGroup.id}
-                  className="border-b border-border hover:bg-transparent"
-                >
+                <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      className="text-xs font-bold uppercase letter-spacing tracking-wide text-slate-600 dark:text-slate-300 py-3 px-4"
+                      className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
                     >
                       {header.isPlaceholder
                         ? null
@@ -308,23 +376,20 @@ export default function DishTable() {
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="text-center py-16"
+                    className="py-16 text-center"
                   >
                     <div className="flex justify-center">
-                      <Spinner />
+                      <Spinner className="size-6" />
                     </div>
                   </TableCell>
                 </TableRow>
               ) : table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row, idx) => (
-                  <TableRow
-                    key={row.id}
-                    className="border-b border-border/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors duration-200"
-                  >
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
                         key={cell.id}
-                        className="py-3 px-4 text-sm align-middle"
+                        className="px-4 py-3 align-middle"
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
@@ -338,89 +403,104 @@ export default function DishTable() {
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="text-center py-16 text-muted-foreground"
+                    className="py-16 text-center"
                   >
-                    <div className="flex flex-col items-center gap-2">
-                      <svg
-                        className="w-12 h-12 text-muted-foreground/30"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                        />
-                      </svg>
-                      <p>Không có dữ liệu</p>
-                      <p className="text-sm text-muted-foreground">
-                        Thêm một món ăn để bắt đầu
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <Inbox className="size-10" aria-hidden />
+                      <p className="font-medium text-foreground">
+                        Không có dữ liệu
                       </p>
+                      <p className="text-sm">Thêm một món ăn để bắt đầu</p>
                     </div>
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
+        </Card>
+
+        <div className="space-y-3 md:hidden">
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Spinner className="size-6" />
+            </div>
+          ) : listTable.length ? (
+            listTable.map((dish: DishItem) => (
+              <MobileDishCard
+                key={dish.id}
+                dish={dish}
+                onEdit={() => setDishIdEdit(dish.id)}
+                onDelete={() => setDishDelete(dish)}
+              />
+            ))
+          ) : (
+            <Card>
+              <CardContent className="flex flex-col items-center gap-2 p-8 text-center text-muted-foreground">
+                <Inbox className="size-10" aria-hidden />
+                <p className="font-medium text-foreground">Không có dữ liệu</p>
+                <p className="text-sm">Thêm một món ăn để bắt đầu</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
-        {/* Pagination */}
-        <div className="flex items-center justify-center gap-2 pt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={pagination.pageIndex === 0}
-            onClick={() =>
-              setPagination((prev) => ({
-                ...prev,
-                pageIndex: prev.pageIndex - 1,
-              }))
-            }
-            className="h-9"
+
+        {totalPages > 1 && (
+          <nav
+            aria-label="Phân trang"
+            className="flex flex-wrap items-center justify-center gap-2 pt-2"
           >
-            ← Trước
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={pagination.pageIndex === 0}
+              onClick={() =>
+                setPagination((prev) => ({
+                  ...prev,
+                  pageIndex: prev.pageIndex - 1,
+                }))
+              }
+              className="h-10 px-3"
+            >
+              Trước
+            </Button>
 
-          <div className="flex gap-1 items-center px-2">
-            {Array.from({ length: meta?.totalPages ?? 1 }, (_, i) => {
-              const pageNum = i + 1;
-              const isCurrentPage = pagination.pageIndex === i;
+            <div className="flex flex-wrap items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => {
+                const pageNum = i + 1;
+                const isCurrent = pagination.pageIndex === i;
+                return (
+                  <Button
+                    key={i}
+                    variant={isCurrent ? "default" : "outline"}
+                    size="sm"
+                    onClick={() =>
+                      setPagination((prev) => ({ ...prev, pageIndex: i }))
+                    }
+                    aria-current={isCurrent ? "page" : undefined}
+                    className="h-10 min-w-10"
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
 
-              return (
-                <Button
-                  key={i}
-                  variant={isCurrentPage ? "default" : "outline"}
-                  size="sm"
-                  onClick={() =>
-                    setPagination((prev) => ({
-                      ...prev,
-                      pageIndex: i,
-                    }))
-                  }
-                  className="h-9 w-9 p-0"
-                >
-                  {pageNum}
-                </Button>
-              );
-            })}
-          </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={pagination.pageIndex + 1 >= (meta?.totalPages ?? 1)}
-            onClick={() =>
-              setPagination((prev) => ({
-                ...prev,
-                pageIndex: prev.pageIndex + 1,
-              }))
-            }
-            className="h-9"
-          >
-            Tiếp →
-          </Button>
-        </div>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={pagination.pageIndex + 1 >= totalPages}
+              onClick={() =>
+                setPagination((prev) => ({
+                  ...prev,
+                  pageIndex: prev.pageIndex + 1,
+                }))
+              }
+              className="h-10 px-3"
+            >
+              Tiếp
+            </Button>
+          </nav>
+        )}
       </div>
     </DishTableContext.Provider>
   );

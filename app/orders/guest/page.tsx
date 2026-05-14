@@ -3,10 +3,10 @@
 import LuxuryLoading from "@/components/loading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGuestOrderRealtime } from "@/lib/hooks/sockets/use-guest-order-realtime";
 import { useSessionStore } from "@/lib/stores/session.store";
-import { formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { useGuestGetListOrderQuery } from "@/queries/guests/useGuest";
 import {
   ListOrderGuestResponse,
@@ -33,25 +33,16 @@ const STATUS_CONFIG: Record<OrderStatus, { label: string; icon: any }> = {
   CONFIRMED: { label: "Đã xác nhận", icon: CheckCircle2 },
   COOKING: { label: "Đang nấu", icon: ChefHat },
   PAID: { label: "Đã thanh toán", icon: CreditCard },
-  CANCELLED: { label: "Đã hủy", icon: AlertCircle },
+  CANCELLED: { label: "Đã huỷ", icon: AlertCircle },
 };
 
 export default function MyOrdersPage() {
   const router = useRouter();
 
-  /**
-   * 🔥 LẤY TỪ ZUSTAND
-   */
   const { orderId } = useSessionStore();
 
-  /**
-   * 🔥 REALTIME
-   */
   useGuestOrderRealtime(orderId!);
 
-  /**
-   * 🔥 QUERY
-   */
   const { data, isLoading } = useGuestGetListOrderQuery();
 
   const guestOrders: ListOrderGuestResponse | undefined = data?.data;
@@ -63,24 +54,24 @@ export default function MyOrdersPage() {
       ? STATUS_FLOW.indexOf(statusOrder)
       : -1;
 
-  const progressPercent =
-    statusOrder === "CANCELLED"
-      ? 0
-      : currentIndex >= 0
-        ? (currentIndex / (STATUS_FLOW.length - 1)) * 100
-        : 0;
+  let progressPercent = 0;
+  if (statusOrder !== "CANCELLED" && currentIndex >= 0) {
+    progressPercent = (currentIndex / (STATUS_FLOW.length - 1)) * 100;
+  }
 
-  /**
-   * 🔥 GUARD
-   */
   if (!orderId) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1a120c] to-[#0f0a07] p-4">
-        <div className="text-center space-y-3">
-          <AlertCircle size={48} className="mx-auto text-red-400" />
-          <p className="text-lg text-[#c9b8a6]">Không tìm thấy đơn hàng</p>
+      <main className="flex min-h-dvh items-center justify-center bg-background p-4 text-foreground">
+        <div className="space-y-3 text-center" role="alert">
+          <AlertCircle
+            aria-hidden
+            className="mx-auto size-12 text-destructive"
+          />
+          <p className="text-base text-muted-foreground sm:text-lg">
+            Không tìm thấy đơn hàng
+          </p>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -93,110 +84,141 @@ export default function MyOrdersPage() {
   const isCancelled = statusOrder === "CANCELLED";
   const isPaid = statusOrder === "PAID";
 
+  let badgeVariant: "destructive" | "default" | "secondary" = "secondary";
+  if (isCancelled) badgeVariant = "destructive";
+  else if (isPaid) badgeVariant = "default";
+
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-[#1a120c] to-[#0f0a07] text-[#f5f1e8] p-3 sm:p-4 md:p-6 lg:p-10">
-      <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6">
-        {/* HEADER */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#f08a00] mb-1 leading-tight">
-              Đơn Hàng Của Bạn
+    <main className="relative min-h-dvh overflow-hidden bg-background text-foreground">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.16),transparent_42%),radial-gradient(circle_at_80%_20%,rgba(249,115,22,0.14),transparent_38%),linear-gradient(to_bottom,rgba(10,10,10,0.96),rgba(6,6,6,1))]"
+      />
+
+      <div className="relative container mx-auto space-y-4 px-4 py-6 sm:space-y-6 sm:px-6 sm:py-8 lg:px-8">
+        <header className="relative overflow-hidden rounded-2xl border border-amber-900/30 bg-card/40 p-4 shadow-xl backdrop-blur-md sm:p-5 md:flex md:items-center md:justify-between md:gap-4 md:p-6">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-amber-500/10 via-transparent to-orange-500/10"
+          />
+
+          <div className="relative min-w-0 flex-1">
+            <p className="text-[11px] uppercase tracking-[0.3em] text-amber-200/70 sm:text-xs">
+              Fine Dining Experience
+            </p>
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
+              Đơn hàng của bạn
             </h1>
-            <p className="text-sm sm:text-base md:text-lg text-[#c9b8a6] truncate">
+            <p className="mt-1 truncate text-sm text-muted-foreground sm:text-base">
               {guestOrders.guestName}
             </p>
           </div>
+
           <Badge
-            className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold whitespace-nowrap flex-shrink-0 ${
+            variant={badgeVariant}
+            className={cn(
+              "relative mt-4 self-start whitespace-nowrap px-3 py-1.5 text-xs shadow-sm sm:mt-0 sm:text-sm",
               isCancelled
-                ? "bg-red-900/40 text-red-400"
-                : isPaid
-                  ? "bg-green-900/40 text-green-400"
-                  : "bg-[#f08a00]/20 text-[#f08a00]"
-            }`}
+                ? "border border-destructive/40 bg-destructive/15 text-destructive"
+                : "border border-amber-700/30 bg-amber-500/10 text-amber-100",
+            )}
           >
             {STATUS_CONFIG[guestOrders.status].label}
           </Badge>
-        </div>
+        </header>
 
-        {/* STATUS TRACKER */}
-        <Card className="bg-gradient-to-br from-[#2a1a12] to-[#1f140e] border border-[#f08a00]/20 p-4 sm:p-6 md:p-8">
-          {isCancelled ? (
-            <div className="flex items-center justify-center gap-2 sm:gap-3 py-6 sm:py-8 text-red-400">
-              <AlertCircle size={20} className="flex-shrink-0" />
-              <span className="text-base sm:text-lg font-semibold">
-                Đơn hàng đã bị hủy
-              </span>
-            </div>
-          ) : (
-            <div className="space-y-6 sm:space-y-8">
-              {/* Progress Bar */}
-              <div className="relative">
-                <div className="absolute top-5 sm:top-6 left-0 right-0 h-[2px] sm:h-[3px] bg-[#f08a00]/20 rounded-full" />
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progressPercent}%` }}
-                  transition={{ duration: 0.8, ease: "easeInOut" }}
-                  className="absolute top-5 sm:top-6 left-0 h-[2px] sm:h-[3px] bg-[#f08a00] rounded-full"
-                />
+        <Card className="overflow-hidden border-amber-900/30 bg-card/55 shadow-xl backdrop-blur-md">
+          <CardContent className="p-4 sm:p-6 md:p-8">
+            {isCancelled ? (
+              <div
+                className="flex items-center justify-center gap-3 rounded-xl border border-destructive/30 bg-destructive/10 py-6 text-destructive sm:py-8"
+                role="alert"
+              >
+                <AlertCircle aria-hidden className="size-5 shrink-0" />
+                <span className="text-base font-semibold sm:text-lg">
+                  Đơn hàng đã bị huỷ
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="relative">
+                  <div
+                    className="absolute left-0 right-0 top-5 h-[2px] rounded-full bg-amber-200/20 sm:top-6 sm:h-[3px]"
+                    aria-hidden
+                  />
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercent}%` }}
+                    transition={{ duration: 0.9, ease: "easeInOut" }}
+                    className="absolute left-0 top-5 h-[2px] rounded-full bg-gradient-to-r from-amber-300 via-orange-400 to-amber-500 shadow-[0_0_16px_rgba(251,191,36,0.45)] sm:top-6 sm:h-[3px]"
+                    aria-hidden
+                  />
 
-                {/* Status Steps */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 md:gap-4 pt-8 sm:pt-10 md:pt-12">
-                  {STATUS_FLOW.map((status, index) => {
-                    const isCompleted = index < currentIndex;
-                    const isCurrent = index === currentIndex;
-                    const Icon = STATUS_CONFIG[status].icon;
+                  <div className="grid grid-cols-2 gap-3 pt-8 sm:grid-cols-4 sm:gap-4 sm:pt-10 md:pt-12">
+                    {STATUS_FLOW.map((status, index) => {
+                      const isCompleted = index < currentIndex;
+                      const isCurrent = index === currentIndex;
+                      const Icon = STATUS_CONFIG[status].icon;
+                      const isActive = isCompleted || isCurrent;
 
-                    return (
-                      <motion.div
-                        key={status}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="flex flex-col items-center"
-                      >
-                        <div
-                          className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center font-semibold transition-all duration-300 flex-shrink-0 ${
-                            isCompleted
-                              ? "bg-[#f08a00] text-black shadow-lg shadow-[#f08a00]/30"
-                              : isCurrent
-                                ? "bg-[#f08a00] text-black shadow-lg shadow-[#f08a00]/30"
-                                : "bg-[#2a1a12] text-[#c9b8a6]"
-                          }`}
+                      return (
+                        <motion.div
+                          key={status}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="flex flex-col items-center"
                         >
-                          {isCompleted ? (
-                            <Check
-                              size={16}
-                              className="sm:w-5 sm:h-5 md:w-6 md:h-6"
-                            />
-                          ) : (
-                            <Icon
-                              size={16}
-                              className="sm:w-5 sm:h-5 md:w-6 md:h-6"
-                            />
-                          )}
-                        </div>
-                        <span className="mt-2 sm:mt-2.5 md:mt-3 text-xs sm:text-xs md:text-sm font-medium text-[#c9b8a6] text-center leading-tight">
-                          {STATUS_CONFIG[status].label}
-                        </span>
-                      </motion.div>
-                    );
-                  })}
+                          <motion.div
+                            whileHover={{ y: -2 }}
+                            transition={{ duration: 0.2 }}
+                            className={cn(
+                              "relative flex size-10 shrink-0 items-center justify-center rounded-full border transition-all duration-base sm:size-12 md:size-14",
+                              isActive
+                                ? "border-amber-400/70 bg-gradient-to-br from-amber-500/90 to-orange-500/90 text-amber-50 shadow-[0_0_18px_rgba(251,191,36,0.45)]"
+                                : "border-border bg-background/70 text-muted-foreground",
+                            )}
+                            aria-current={isCurrent ? "step" : undefined}
+                          >
+                            {isCurrent && (
+                              <span
+                                aria-hidden
+                                className="absolute inset-0 rounded-full border border-amber-300/50 animate-pulse"
+                              />
+                            )}
+                            {isCompleted ? (
+                              <Check
+                                aria-hidden
+                                className="size-4 sm:size-5 md:size-6"
+                              />
+                            ) : (
+                              <Icon
+                                aria-hidden
+                                className="size-4 sm:size-5 md:size-6"
+                              />
+                            )}
+                          </motion.div>
+                          <span className="mt-2 text-center text-xs font-medium leading-tight text-amber-50/90 sm:mt-3 sm:text-sm">
+                            {STATUS_CONFIG[status].label}
+                          </span>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </CardContent>
         </Card>
 
-        {/* ORDER ITEMS */}
-        <Card className="bg-gradient-to-br from-[#2a1a12] to-[#1f140e] border border-[#f08a00]/20 overflow-hidden">
-          <div className="bg-gradient-to-r from-[#f08a00]/10 to-transparent px-4 sm:px-6 py-3 sm:py-4 border-b border-[#f08a00]/20">
-            <h3 className="text-base sm:text-lg md:text-xl font-bold text-[#f08a00]">
-              Chi Tiết Đơn Hàng
-            </h3>
-          </div>
+        <Card className="overflow-hidden border-amber-900/30 bg-card/55 shadow-xl backdrop-blur-md">
+          <CardHeader className="border-b border-amber-900/30 bg-gradient-to-r from-amber-600/10 via-transparent to-orange-600/10">
+            <CardTitle className="text-base sm:text-lg md:text-xl">
+              Chi tiết đơn hàng
+            </CardTitle>
+          </CardHeader>
 
-          <div className="space-y-2 px-2 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6">
+          <CardContent className="space-y-3 p-4 sm:p-6">
             {guestOrders.items.map((item: OrderGuestItem, idx: number) => {
               const total = item.price * item.quantity;
 
@@ -206,37 +228,40 @@ export default function MyOrdersPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.05 }}
-                  className="group flex justify-between items-start sm:items-center gap-3 p-3 sm:p-4 bg-[#1f140e]/60 hover:bg-[#f08a00]/10 border border-transparent hover:border-[#f08a00]/30 rounded-lg transition-all duration-200"
+                  whileHover={{ y: -2 }}
+                  className="group relative flex items-start justify-between gap-3 overflow-hidden rounded-xl border border-amber-900/25 bg-gradient-to-r from-amber-950/20 to-orange-950/10 p-3 transition-all duration-base hover:border-amber-700/40 hover:shadow-md sm:items-center sm:p-4"
                 >
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-[#f5f1e8] text-sm sm:text-base group-hover:text-[#f08a00] transition-colors">
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-amber-300/70 to-orange-500/70 opacity-60"
+                  />
+
+                  <div className="min-w-0 flex-1 pl-1">
+                    <p className="text-sm font-semibold text-foreground sm:text-base">
                       {item.name}
                     </p>
-                    <p className="text-xs sm:text-sm text-[#c9b8a6] mt-1.5 font-medium">
+                    <p className="mt-1 text-xs font-medium text-amber-100/70 sm:text-sm">
                       {formatCurrency(item.price)} × {item.quantity}
                     </p>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <p className="font-bold text-[#f08a00] text-base sm:text-lg whitespace-nowrap">
-                      {formatCurrency(total)}
-                    </p>
-                  </div>
+                  <p className="whitespace-nowrap text-base font-bold tabular-nums text-amber-300 sm:text-lg">
+                    {formatCurrency(total)}
+                  </p>
                 </motion.div>
               );
             })}
-          </div>
+          </CardContent>
 
-          {/* Total */}
-          <div className=" relative mt-2 border-t-2 border-[#f08a00]/30 bg-gradient-to-r from-[#f08a00]/25 via-[#f08a00]/10 to-transparent px-4 sm:px-6 py-5 sm:py-6 md:py-8 shadow-lg">
-            <div className=" mx-auto flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-4">
-              <span className="text-base sm:text-lg md:text-xl font-bold text-[#f5f1e8] tracking-wide">
-                TỔNG CỘNG :
+          <div className="border-t border-amber-900/30 bg-gradient-to-r from-amber-950/35 via-transparent to-orange-950/35 px-4 py-5 sm:px-6 sm:py-6">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
+              <span className="text-sm font-bold uppercase tracking-wide text-amber-50/90 sm:text-base">
+                Tổng cộng
               </span>
               <motion.span
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.3, type: "spring" }}
-                className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#f08a00] tracking-tight drop-shadow-lg mx-auto "
+                className="text-2xl font-bold tabular-nums tracking-tight text-amber-300 sm:text-3xl md:text-4xl"
               >
                 {formatCurrency(guestOrders.totalPrice)}
               </motion.span>
@@ -244,27 +269,28 @@ export default function MyOrdersPage() {
           </div>
         </Card>
 
-        {/* ACTION BUTTONS */}
-        <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2 sm:gap-4">
-          <Button className="w-full py-4 sm:py-5 md:py-6 text-sm sm:text-base font-semibold bg-[#f08a00] hover:bg-[#e67e00] text-black flex items-center justify-center gap-2 rounded transition-colors flex-shrink-0">
-            <Phone size={18} className="flex-shrink-0" />
-            <span className="truncate">Liên Hệ Hỗ Trợ</span>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+          <Button className="h-12 gap-2 border border-amber-700/40 bg-gradient-to-r from-amber-700/80 to-orange-700/80 text-sm font-semibold text-amber-50 shadow-md transition-all duration-base hover:from-amber-600 hover:to-orange-600 hover:shadow-lg sm:text-base">
+            <Phone aria-hidden className="size-4 shrink-0 sm:size-5" />
+            <span className="truncate">Liên hệ hỗ trợ</span>
           </Button>
 
           <Button
             onClick={() => router.back()}
             disabled={isPaid || isCancelled}
-            className={`w-full py-4 sm:py-5 md:py-6 text-sm sm:text-base font-semibold flex items-center justify-center gap-2 rounded transition-colors flex-shrink-0 ${
+            variant={isPaid || isCancelled ? "outline" : "default"}
+            className={cn(
+              "h-12 gap-2 text-sm font-semibold sm:text-base",
               isPaid || isCancelled
-                ? "bg-[#2a1a12] text-[#8a7a6a] cursor-not-allowed border border-[#f08a00]/10"
-                : "bg-[#f08a00] hover:bg-[#e67e00] text-black"
-            }`}
+                ? "border-amber-700/40 bg-transparent text-amber-100/70"
+                : "border border-amber-700/40 bg-card/70 text-amber-100 shadow-sm transition-all duration-base hover:bg-card hover:shadow-md",
+            )}
           >
-            <span className="truncate">Gọi Thêm Món</span>
-            <ArrowRight size={18} className="flex-shrink-0" />
+            <span className="truncate">Gọi thêm món</span>
+            <ArrowRight aria-hidden className="size-4 shrink-0 sm:size-5" />
           </Button>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

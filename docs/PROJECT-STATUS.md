@@ -48,6 +48,7 @@ Current focus:
 - guest order tracking
 - cart state management
 - user entry page with quick actions for table order, current order tracking, and QR flow (`app/user/page.tsx`)
+- user order management page with hardcoded data, status badges, summary cards, and detail preview (`app/orders/user/page.tsx`)
 
 ---
 

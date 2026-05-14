@@ -40,9 +40,10 @@ export default async function RootLayout({
           <AppProvider>
             <ThemeProvider
               attribute="class"
-              defaultTheme="system"
-              enableSystem
+              defaultTheme="dark"
+              enableSystem={false}
               disableTransitionOnChange
+              forcedTheme="dark"
             >
               {children}
               <Toaster />

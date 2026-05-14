@@ -33,7 +33,7 @@
 Prefer using:
 
 ```txt
-lib/createResource.ts
+@lib/createResource.ts
 ```
 
 as the default TanStack Query abstraction layer.

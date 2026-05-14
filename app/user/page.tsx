@@ -38,7 +38,7 @@ const quickActions = [
 export default function UserPage() {
   return (
     <div className="w-full space-y-10 pb-12 sm:space-y-12 sm:pb-14 lg:space-y-14">
-      <section className="relative overflow-hidden rounded-3xl border border-border/70 bg-muted/20 shadow-[0_24px_60px_-34px_rgba(0,0,0,0.55)]">
+      <section className="relative overflow-hidden rounded-3xl border border-amber-300/25 bg-[#1b1610]/85 shadow-[0_30px_70px_-36px_rgba(0,0,0,0.7)]">
         <Image
           src="/banner.png"
           width={1400}
@@ -49,7 +49,7 @@ export default function UserPage() {
         />
         <div
           aria-hidden
-          className="absolute inset-0 bg-linear-to-r from-background via-background/82 to-background/40"
+          className="absolute inset-0 bg-linear-to-r from-[#120f0b]/96 via-[#1b1610]/88 to-[#2a1f14]/55"
         />
         <div
           aria-hidden
@@ -59,27 +59,27 @@ export default function UserPage() {
         <div className="relative space-y-6 px-5 py-12 sm:px-8 sm:py-16 lg:px-12 lg:py-20">
           <div className="space-y-3 sm:space-y-4">
             <div className="flex flex-wrap gap-2.5">
-              <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              <span className="inline-flex items-center gap-2 rounded-full border border-amber-300/35 bg-amber-300/12 px-3 py-1 text-xs font-semibold text-amber-100">
                 <Clock3 className="size-3.5" />
                 Xin chào, bạn đã đăng nhập
               </span>
-              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-amber-400/35 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">
+              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-amber-200/35 bg-amber-100/10 px-3 py-1 text-xs font-semibold text-amber-100">
                 <Sparkles className="size-3.5" />
                 Trải nghiệm gọi món nhanh tại nhà hàng
               </span>
             </div>
-            <h1 className="max-w-2xl text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+            <h1 className="max-w-2xl text-3xl font-bold tracking-tight text-amber-50 sm:text-4xl lg:text-5xl">
               Chọn cách bạn muốn đặt món
             </h1>
-            <p className="max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
+            <p className="max-w-xl text-sm leading-6 text-amber-100/80 sm:text-base">
               Truy cập nhanh các tác vụ đặt món, theo dõi đơn và gọi món tại bàn.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Button asChild size="lg" className="h-12 w-full px-6 text-sm font-semibold sm:w-auto sm:min-w-40">
-              <Link href="/tables">
+            <Button asChild size="lg" className="h-12 w-full bg-amber-200 text-amber-950 hover:bg-amber-100 px-6 text-sm font-semibold sm:w-auto sm:min-w-40">
+              <Link href="/tables" className="inline-flex items-center gap-2">
                 Đặt món ngay
-                <ArrowRight className="size-4" />
+                <ArrowRight className="size-4 shrink-0" />
               </Link>
             </Button>
             <Button
@@ -117,10 +117,10 @@ export default function UserPage() {
                     <h2 className="text-base font-semibold leading-6 sm:text-lg">{action.title}</h2>
                     <p className="text-sm leading-6 text-muted-foreground">{action.description}</p>
                   </div>
-                  <Button asChild variant="outline" className="mt-auto h-11 w-full border-border/80">
-                    <Link href={action.href}>
+                  <Button asChild variant="outline" className="mt-auto h-11 w-full border-amber-300/30 bg-amber-50/5 text-amber-100 hover:bg-amber-100/10">
+                    <Link href={action.href} className="inline-flex items-center gap-2">
                       {action.cta}
-                      <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                      <ArrowRight className="size-4 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5" />
                     </Link>
                   </Button>
                 </CardContent>

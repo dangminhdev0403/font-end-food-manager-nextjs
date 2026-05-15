@@ -38,7 +38,7 @@ const quickActions = [
 export default function UserPage() {
   return (
     <div className="w-full space-y-10 pb-12 sm:space-y-12 sm:pb-14 lg:space-y-14">
-      <section className="relative overflow-hidden rounded-3xl border border-amber-300/25 bg-[#1b1610]/85 shadow-[0_30px_70px_-36px_rgba(0,0,0,0.7)]">
+      <section className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-lg">
         <Image
           src="/banner.png"
           width={1400}
@@ -49,7 +49,7 @@ export default function UserPage() {
         />
         <div
           aria-hidden
-          className="absolute inset-0 bg-linear-to-r from-[#120f0b]/96 via-[#1b1610]/88 to-[#2a1f14]/55"
+          className="absolute inset-0 bg-linear-to-r from-background via-background/80 to-background/45"
         />
         <div
           aria-hidden
@@ -59,16 +59,16 @@ export default function UserPage() {
         <div className="relative space-y-6 px-5 py-12 sm:px-8 sm:py-16 lg:px-12 lg:py-20">
           <div className="space-y-3 sm:space-y-4">
             <div className="flex flex-wrap gap-2.5">
-              <span className="inline-flex items-center gap-2 rounded-full border border-amber-300/35 bg-amber-300/12 px-3 py-1 text-xs font-semibold text-amber-100">
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                 <Clock3 className="size-3.5" />
                 Xin chào, bạn đã đăng nhập
               </span>
-              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-amber-200/35 bg-amber-100/10 px-3 py-1 text-xs font-semibold text-amber-100">
+              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-secondary/60 bg-secondary/20 px-3 py-1 text-xs font-semibold text-foreground">
                 <Sparkles className="size-3.5" />
                 Trải nghiệm gọi món nhanh tại nhà hàng
               </span>
             </div>
-            <h1 className="max-w-2xl text-3xl font-bold tracking-tight text-amber-50 sm:text-4xl lg:text-5xl">
+            <h1 className="max-w-2xl text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
               Chọn cách bạn muốn đặt món
             </h1>
             <p className="max-w-xl text-sm leading-6 text-amber-100/80 sm:text-base">

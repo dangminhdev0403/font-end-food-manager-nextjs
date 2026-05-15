@@ -92,19 +92,19 @@ export default function MyOrdersPage() {
     <main className="relative min-h-dvh overflow-hidden bg-background text-foreground">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.16),transparent_42%),radial-gradient(circle_at_80%_20%,rgba(249,115,22,0.14),transparent_38%),linear-gradient(to_bottom,rgba(10,10,10,0.96),rgba(6,6,6,1))]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.12),transparent_42%),radial-gradient(circle_at_80%_20%,rgba(52,211,153,0.08),transparent_38%)]"
       />
 
       <div className="relative container mx-auto space-y-4 px-4 py-6 sm:space-y-6 sm:px-6 sm:py-8 lg:px-8">
-        <header className="relative overflow-hidden rounded-2xl border border-amber-900/30 bg-card/40 p-4 shadow-xl backdrop-blur-md sm:p-5 md:flex md:items-center md:justify-between md:gap-4 md:p-6">
+        <header className="relative overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-md sm:p-5 md:flex md:items-center md:justify-between md:gap-4 md:p-6">
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-amber-500/10 via-transparent to-orange-500/10"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-accent/5"
           />
 
           <div className="relative min-w-0 flex-1">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-amber-200/70 sm:text-xs">
-              Fine Dining Experience
+            <p className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground sm:text-xs">
+              Trải nghiệm ẩm thực hiện đại
             </p>
             <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
               Đơn hàng của bạn

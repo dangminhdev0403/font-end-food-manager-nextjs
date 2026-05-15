@@ -35,7 +35,7 @@ export default function MenuClient({ listProduct, meta }: Props) {
 
   return (
     <Suspense fallback={<LuxuryLoading text="Đang chuẩn bị MENU..." />}>
-      <div className="min-h-screen bg-background dark">
+      <div className="min-h-screen bg-background text-foreground">
         {/* Header */}
         <div className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
           <div className="w-full px-6 py-4 flex items-center justify-between">
@@ -79,7 +79,7 @@ export default function MenuClient({ listProduct, meta }: Props) {
                   delay={index * 50}
                   className="h-full"
                 >
-                  <Card className="group overflow-hidden h-full flex flex-col bg-gradient-to-br from-amber-950/20 to-orange-950/10 border-amber-900/20 hover:border-amber-700/40 hover:shadow-lg hover:shadow-amber-900/10 transition-all duration-500">
+                  <Card className="group flex h-full flex-col overflow-hidden border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg">
                     <div className="relative h-56 overflow-hidden flex-shrink-0">
                       <Image
                         src={item.images?.[0] ?? "/placeholder.svg"}
@@ -93,7 +93,7 @@ export default function MenuClient({ listProduct, meta }: Props) {
 
                     <CardContent className="p-5 flex-1 flex flex-col">
                       <div className="flex items-center justify-between mb-3">
-                        <span className="text-lg font-semibold text-amber-400">
+                        <span className="text-lg font-semibold text-primary">
                           {formatCurrency(item.basePrice)}
                         </span>
                       </div>

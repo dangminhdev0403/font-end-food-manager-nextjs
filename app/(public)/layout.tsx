@@ -19,7 +19,7 @@ export default function Layout({
 }>) {
   return (
     <div className="relative flex min-h-dvh w-full flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-sticky flex h-14 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur sm:h-16 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-sticky flex h-14 items-center gap-3 border-b border-border bg-background/95 px-4 shadow-sm sm:h-16 sm:px-6 lg:px-8">
         <Sheet>
           <SheetTrigger asChild>
             <Button

@@ -20,7 +20,7 @@ export default async function Layout({
       <NavLinks />
 
       <div className="flex flex-1 flex-col sm:pl-14">
-        <header className="sticky top-0 z-sticky flex h-14 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-sm sm:h-16 sm:px-6">
+        <header className="sticky top-0 z-sticky flex h-14 items-center gap-3 border-b border-border bg-background/95 px-4 shadow-sm sm:h-16 sm:px-6">
           <MobileNavLinks />
           <div className="flex-1" />
           <div className="flex items-center gap-2 sm:gap-3">

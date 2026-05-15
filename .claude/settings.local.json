@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npm run *)",
       "Skill(frontend-design)",
-      "Skill(frontend-design:*)"
+      "Skill(frontend-design:*)",
+      "Skill(ui-ux-pro-max)",
+      "Skill(ui-ux-pro-max:*)"
     ]
   }
 }

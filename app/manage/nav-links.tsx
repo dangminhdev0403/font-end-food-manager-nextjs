@@ -20,7 +20,7 @@ export default function NavLinks() {
     <TooltipProvider delayDuration={150}>
       <aside
         aria-label="Menu quản lý"
-        className="fixed inset-y-0 left-0 z-sticky hidden w-14 flex-col border-r border-border bg-background sm:flex"
+        className="fixed inset-y-0 left-0 z-sticky hidden w-14 flex-col border-r border-border bg-card sm:flex"
       >
         <nav className="flex flex-col items-center gap-3 px-2 py-5">
           <Link
